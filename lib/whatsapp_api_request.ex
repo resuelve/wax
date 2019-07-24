@@ -1,7 +1,7 @@
 defmodule WhatsappApiRequest do
   use HTTPoison.Base
 
-  @default_headers []
+  @default_headers [{"Content-Type", "application/json"}]
 
   def process_request_url(url) do
     base_url = Application.get_env(:whatsapp_api, :url_base) || ""

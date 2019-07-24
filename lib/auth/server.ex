@@ -1,32 +1,58 @@
-defmodule Qbox.Whatsapp.Auth.Server do
+defmodule Whatsapp.Auth.Server do
   @moduledoc """
   GenServer para manejo de la generación de tokens para autenticación
   """
 
   # Every 24 hours
   @daily 24 * 60 * 60 * 1_000
+  @server WhatsappAuthServer
 
   require Logger
 
   use GenServer
 
-  alias Qbox.Managers.Providers.WhatsappProviderManager
-  alias Qbox.Whatsapp.Auth.Manager
+  alias __MODULE__
+  alias Whatsapp.Auth.Manager
 
   @doc """
   Callback de inicio del GenServer
   """
-  @spec init(any()) :: {:ok, any()}
-  def init(_) do
+  @spec init(Keyword.t()) :: {:ok, any()}
+  def init(args) do
+    Process.flag(:trap_exit, true)
     Logger.info("Whatsapp Auth System online")
+    providers = Keyword.fetch!(args, :providers)
 
     tokens =
-      :qbox
-      |> Application.get_env(:create_wa_auth_token)
+      providers
       |> get_new_tokens()
 
     schedule_token_check()
-    {:ok, tokens}
+    {:ok, %{tokens: tokens, providers: providers}}
+  end
+
+  @doc """
+  Inicia el GenServer para manejo de la autenticación de Whatsapp
+  """
+  @spec start_link(list) :: any()
+  def start_link(providers) do
+    GenServer.start_link(Server, [providers: providers], [name: @server])
+  end
+
+  @doc """
+  Lista todos los tokens guardados
+  """
+  @spec list_tokens() :: list
+  def list_tokens() do
+    GenServer.call(@server, :list)
+  end
+
+  @doc """
+  Obtiene el token de autenticación del producto dado
+  """
+  @spec get_token(binary()) :: binary() | nil
+  def get_token(product) do
+    GenServer.call(@server, {:lookup_token, product})
   end
 
   @doc """
@@ -35,11 +61,10 @@ defmodule Qbox.Whatsapp.Auth.Server do
   """
   @spec terminate(atom, map) :: any()
   def terminate(_reason, state) do
-    [type: "whatsapp"]
-    |> WhatsappProviderManager.get_all()
+    state.providers
     |> Enum.reduce(%{}, fn provider, tokens ->
       token =
-        state
+        state.tokens
         |> Map.get(provider.name)
         |> Map.get("token")
 
@@ -56,13 +81,13 @@ defmodule Qbox.Whatsapp.Auth.Server do
     Logger.info("Checking tokens")
     tokens = get_new_tokens(state)
     schedule_token_check()
-    {:noreply, tokens}
+    {:noreply, Map.put(state, :tokens, tokens)}
   end
 
   @doc """
   Lista los tokens guardados
   """
-  @spec handle_call(:list, PID, map) :: {:reply, map, map} 
+  @spec handle_call(:list, PID, map) :: {:reply, map, map}
   def handle_call(:list, _from, state) do
     {:reply, state, state}
   end
@@ -73,9 +98,9 @@ defmodule Qbox.Whatsapp.Auth.Server do
   """
   @spec handle_call({:lookup_token, binary()}, any(), any()) ::
           {:reply, any(), any()}
-  def handle_call({:lookup_token, product}, _from, tokens) do
-    token = get_in(tokens, [product, "token"]) || ""
-    {:reply, token, tokens}
+  def handle_call({:lookup_token, product}, _from, state) do
+    token = get_in(state.tokens, [product, "token"]) || ""
+    {:reply, token, state}
   end
 
   # Programa el siguiente check de tokens
@@ -88,7 +113,7 @@ defmodule Qbox.Whatsapp.Auth.Server do
   Obtiene los token nuevos o genera un token de prueba
   """
   @spec get_new_tokens(boolean) :: map
-  def get_new_tokens(false) do
+  def get_new_tokens(%{tokens: false}) do
     %{
       "test" => %{
         "token" => "TOKEN",
@@ -97,7 +122,7 @@ defmodule Qbox.Whatsapp.Auth.Server do
     }
   end
 
-  def get_new_tokens(tokens) when is_map(tokens) do
+  def get_new_tokens(%{tokens: tokens}) when is_map(tokens) do
     tokens
     |> Map.keys()
     |> Enum.reduce(%{}, fn product, acc ->
@@ -110,9 +135,8 @@ defmodule Qbox.Whatsapp.Auth.Server do
     end)
   end
 
-  def get_new_tokens(_) do
-    [type: "whatsapp"]
-    |> WhatsappProviderManager.get_all()
+  def get_new_tokens(providers) do
+    providers
     |> Enum.reduce(%{}, fn provider, tokens ->
       Map.put(tokens, provider.name, Manager.login(provider))
     end)

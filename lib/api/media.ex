@@ -3,6 +3,8 @@ defmodule Whatsapp.Api.Media do
   Modulo para el manejo de archivos media de Whatsapp
   """
 
+  @parser Application.get_env(:whatsapp_api, :parser)
+
   alias Whatsapp.Models.MessageOutboundMedia
   alias Whatsapp.Models.MediaDownload
   alias WhatsappApiRequestMedia
@@ -16,14 +18,9 @@ defmodule Whatsapp.Api.Media do
   def upload(%MessageOutboundMedia{data: data, mime_type: mime_type}, auth_header) do
     headers = [{"Content-Type", mime_type}, auth_header]
 
-    with {:ok, media_result} <- WhatsappApiRequestMedia.post("media", data, headers) do
-      %{"media" => [%{"id" => media_id}]} = media_result
-      Logger.info(fn -> "Media #{media_id} uploaded correctly" end)
-      {:ok, media_id}
-    else
-      error ->
-        {:error, error}
-    end
+    "/media"
+    |> WhatsappApiRequestMedia.post!(data, headers)
+    |> @parser.parse(:media_upload)
   end
 
   @doc """
@@ -32,14 +29,12 @@ defmodule Whatsapp.Api.Media do
   @spec download(MediaDownload.t(), tuple()) :: tuple
   def download(%MediaDownload{} = media, auth_header) do
     # Se envia no_parse: true para que no intente convertir la respuesta a JSON
-    case WhatsappApiRequestMedia.get("media/#{media.id}", [auth_header]) do
-      {:ok, media_response} when is_bitstring(media_response) ->
-        {:ok, path} = Briefly.create(extname: ".#{media.extension}")
-        File.write!(path, media_response)
-        {:ok, path}
-
-      _ ->
-        {:error, "Response media data was not found"}
-    end
+    media_response =
+      "/media/#{media.id}"
+      |> WhatsappApiRequestMedia.get!(nil, [auth_header])
+      |> @parser.parse(:media_download)
+    {:ok, path} = Briefly.create(extname: ".#{media.extension}")
+    File.write!(path, media_response)
+    {:ok, path}
   end
 end

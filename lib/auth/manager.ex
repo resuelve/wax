@@ -1,4 +1,4 @@
-defmodule Qbox.Whatsapp.Auth.Manager do
+defmodule Whatsapp.Auth.Manager do
   @moduledoc """
   Manager para la autenticación de Whatsapp
   """
@@ -6,15 +6,15 @@ defmodule Qbox.Whatsapp.Auth.Manager do
   require Logger
 
   alias Whatsapp.Models.WhatsappProvider
-  alias Qbox.Whatsapp.Auth
+  alias Whatsapp.Api.Users
 
   @doc """
   Generar nuevo token de login
   """
   @spec login(WhatsappProvider.t()) :: map
-  def login(%WhatsappProvider{wa_account: wa_account} = provider) do
-    case Auth.login(provider, generate_token(wa_account)) do
-      {:ok, %{"users" => [login_data]}} ->
+  def login(%WhatsappProvider{} = provider) do
+    case Users.login(generate_token(provider)) do
+      %{"users" => [login_data]} ->
         expires =
           login_data
           |> Map.get("expires_after")
@@ -25,7 +25,6 @@ defmodule Qbox.Whatsapp.Auth.Manager do
         end)
 
         Map.put(login_data, "expires_after", expires)
-
       _ ->
         Logger.error(fn -> "Whatsapp login failed for #{provider.name}" end)
         %{}
@@ -37,7 +36,7 @@ defmodule Qbox.Whatsapp.Auth.Manager do
   """
   @spec logout(WhatsappProvider.t(), binary()) :: :ok | :error
   def logout(%WhatsappProvider{} = provider, token) do
-    case Auth.logout(provider, token) do
+    case Users.logout(token) do
       {:ok, _} ->
         Logger.info(fn -> "Logout #{provider.name} successful" end)
         :ok
@@ -55,7 +54,6 @@ defmodule Qbox.Whatsapp.Auth.Manager do
   """
   @spec generate_token(map) :: binary()
   def generate_token(%{username: username, password: password}) do
-    decrypt_password = Cipher.decrypt(password)
-    Base.encode64("#{username}:#{decrypt_password}")
+    Base.encode64("#{username}:#{password}")
   end
 end

@@ -3,6 +3,7 @@ defmodule Whatsapp.Api.Users do
   Módulo para manejo de autenticación con Whatsapp
   """
 
+  @parser Application.get_env(:whatsapp_api, :parser)
 
   alias WhatsappApiRequest
 
@@ -13,7 +14,9 @@ defmodule Whatsapp.Api.Users do
   def login(token) do
     headers = [{"Authorization", "Basic #{token}"}]
 
-    WhatsappApiRequest.post("/users/login", headers)
+    "/users/login"
+    |> WhatsappApiRequest.post!(nil, headers)
+    |> @parser.parse(:users_login)
   end
 
   @doc """
@@ -23,8 +26,8 @@ defmodule Whatsapp.Api.Users do
   def logout(token) do
     headers = [{"Authorization", "Bearer #{token}"}]
 
-    # Se manda `auth: false` porque el Berear token no se toma del
-    # GenServer de Tokens sino viene como parámetro
-    WhatsappApiRequest.post("/users/logout", headers)
+    "/users/logout"
+    |> WhatsappApiRequest.post(nil, headers)
+    |> @parser.parse(:users_logout)
   end
 end

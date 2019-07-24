@@ -7,6 +7,9 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
   alias __MODULE__
 
   @enforce_keys [:to, :type, :data, :file_name]
+  @default_values %{
+    caption: nil
+  }
 
   defstruct(
     to: nil,
@@ -29,6 +32,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
     attrs =
       options
       |> Enum.into(Map.new)
+      |> Map.merge(@default_values)
       |> _add_extension_from_mime()
       |> _add_caption()
       |> _add_binary_data()
@@ -36,7 +40,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
     Kernel.struct(__MODULE__, attrs)
   end
 
-  def set_medial_id(media, media_id) do
+  def set_media_id(media, media_id) do
     %{media | media_id: media_id}
   end
 
@@ -77,8 +81,8 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
   @doc """
   Agrega el binario del archivo media al campo de data
   """
-  @spec _add_binary_data(__MODULE__.t()) :: __MODULE__.t()
-  def _add_binary_data(%__MODULE__{data: binary_data} = msg) when is_bitstring(binary_data) do
+  @spec _add_binary_data(map()) :: map()
+  def _add_binary_data(%{data: binary_data} = msg) when is_bitstring(binary_data) do
     binary_data =
       if String.starts_with?(binary_data, "data:") do
         [_, binary_data] = String.split(binary_data, ",", parts: 2)
@@ -89,6 +93,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
 
     %{msg | data: Base.decode64!(binary_data)}
   end
+  def _add_binary_data(_), do: {:error, "Invalid data"}
 
   # Obtiene la extension del archivo a partir del mime_type
   # El null (o vacío) a PDF es por un bug de Whatsapp

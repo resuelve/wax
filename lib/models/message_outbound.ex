@@ -36,7 +36,7 @@ defmodule Whatsapp.Models.MessageOutbound do
   Genera la estructura necesaria para enviar un mensaje a Whatsapp
   """
   @spec to_json(__MODULE__.t()) :: map
-  def to_json(%__MODULE__{type: "text"} = message) do
+  def to_json(%__MODULE__{} = message) do
     %{
       recipient_type: message.recipient,
       to: message.to,
