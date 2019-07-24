@@ -1,5 +1,4 @@
 defmodule Whatsapp.Parser do
-
   alias HTTPoison.Response
 
   @doc """

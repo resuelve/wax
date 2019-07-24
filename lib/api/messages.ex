@@ -16,7 +16,6 @@ defmodule Whatsapp.Api.Messages do
 
   def send(%MessageOutbound{} = message, auth_header) do
     with {:ok, message_validated} <- MessageOutbound.validate(message) do
-
       message = MessageOutbound.to_json(message_validated)
 
       "/messages"

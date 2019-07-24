@@ -14,8 +14,7 @@ defmodule Whatsapp.Models.MediaHelper do
   def valid_extension?(filename) do
     case get_filename_data(filename) do
       {_name, extension} ->
-        String.downcase(extension) in (@image_types ++
-                                         @audio_types ++ @document_types)
+        String.downcase(extension) in (@image_types ++ @audio_types ++ @document_types)
 
       _ ->
         false

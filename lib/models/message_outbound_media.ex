@@ -31,7 +31,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
   def new(options) do
     attrs =
       options
-      |> Enum.into(Map.new)
+      |> Enum.into(Map.new())
       |> Map.merge(@default_values)
       |> _add_extension_from_mime()
       |> _add_caption()
@@ -47,6 +47,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
   def validate(%MessageOutboundMedia{media_id: nil}) do
     {:error, "Invalid media_id"}
   end
+
   def validate(message) do
     {:ok, message}
   end
@@ -93,6 +94,7 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
 
     %{msg | data: Base.decode64!(binary_data)}
   end
+
   def _add_binary_data(_), do: {:error, "Invalid data"}
 
   # Obtiene la extension del archivo a partir del mime_type
@@ -113,7 +115,8 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
 
   # Asigna el nombre del archivo como content para los mensajes media de tipo document
   @spec _add_caption(map()) :: map()
-  def _add_caption(%{caption: caption, type: "document", file_name: file_name} = msg) when caption in [nil, ""] do
+  def _add_caption(%{caption: caption, type: "document", file_name: file_name} = msg)
+      when caption in [nil, ""] do
     Map.put(msg, :caption, file_name)
   end
 

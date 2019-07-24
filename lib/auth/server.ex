@@ -36,7 +36,7 @@ defmodule Whatsapp.Auth.Server do
   """
   @spec start_link(list) :: any()
   def start_link(providers) do
-    GenServer.start_link(Server, [providers: providers], [name: @server])
+    GenServer.start_link(Server, [providers: providers], name: @server)
   end
 
   @doc """
@@ -96,8 +96,7 @@ defmodule Whatsapp.Auth.Server do
   Handler del GenServer para llamada sincrona para
   obtener el token de un producto
   """
-  @spec handle_call({:lookup_token, binary()}, any(), any()) ::
-          {:reply, any(), any()}
+  @spec handle_call({:lookup_token, binary()}, any(), any()) :: {:reply, any(), any()}
   def handle_call({:lookup_token, product}, _from, state) do
     token = get_in(state.tokens, [product, "token"]) || ""
     {:reply, token, state}

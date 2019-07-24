@@ -10,39 +10,47 @@ defmodule Whatsapp.Api.MessagesTest do
   @auth_header {"Authorization", "Bearer token"}
 
   test "Should send text message" do
-    with_mocks([{
-      WhatsappApiRequest,
-      [],
-      [
-        post!: fn (_, _, _) ->
-          %HTTPoison.Response{body: %{}}
-        end
-      ]
-    }]) do
-      message = MessageOutbound.new(
-        to: "15162837151",
-        type: "text",
-        body: "hola!"
-      )
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          post!: fn _, _, _ ->
+            %HTTPoison.Response{body: %{}}
+          end
+        ]
+      }
+    ]) do
+      message =
+        MessageOutbound.new(
+          to: "15162837151",
+          type: "text",
+          body: "hola!"
+        )
+
       assert Messages.send(message, @auth_header) == %{}
     end
   end
 
   test "Should send hsm message" do
-    with_mocks([{
-      WhatsappApiRequest,
-      [],
-      [
-        post!: fn (_, _, _) ->
-          %HTTPoison.Response{body: %{}}
-        end
-      ]
-    }]) do
-      message = MessageOutboundHsm.new(
-        to: "15162837151",
-        type: "text",
-        body: "hola!"
-      )
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          post!: fn _, _, _ ->
+            %HTTPoison.Response{body: %{}}
+          end
+        ]
+      }
+    ]) do
+      message =
+        MessageOutboundHsm.new(
+          to: "15162837151",
+          type: "text",
+          body: "hola!"
+        )
+
       assert Messages.send_hsm(message, @auth_header) == %{}
     end
   end
@@ -53,7 +61,7 @@ defmodule Whatsapp.Api.MessagesTest do
         WhatsappApiRequest,
         [],
         [
-          post!: fn ("/messages", _, _) ->
+          post!: fn "/messages", _, _ ->
             %HTTPoison.Response{body: %{}}
           end
         ]
@@ -62,18 +70,20 @@ defmodule Whatsapp.Api.MessagesTest do
         WhatsappApiRequestMedia,
         [],
         [
-          post!: fn ("/media", _, _) ->
+          post!: fn "/media", _, _ ->
             %HTTPoison.Response{body: %{"media" => [%{"id" => 1}]}}
           end
         ]
       }
     ]) do
-      message = MessageOutboundMedia.new(
-        to: "15162837151",
-        type: "text",
-        file_name: "mi_archivo.pdf",
-        data: "data:text/plain;base64,SGVsbG8gd29ybGQh"
-      )
+      message =
+        MessageOutboundMedia.new(
+          to: "15162837151",
+          type: "text",
+          file_name: "mi_archivo.pdf",
+          data: "data:text/plain;base64,SGVsbG8gd29ybGQh"
+        )
+
       assert Messages.send_media(message, @auth_header) == %{}
     end
   end

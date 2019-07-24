@@ -7,22 +7,26 @@ defmodule WhatsappApiTest do
   alias Whatsapp.Models.WhatsappProvider
 
   test "Should get auth header" do
-    with_mocks([{
-      WhatsappApiRequest,
-      [],
-      [
-        post!: fn (_, _, _) ->
-          %HTTPoison.Response{
-            body: %{
-              "users" => [%{
-                "token" => "dXNlcm5hbWU6cGFzc3dvcmQ=",
-                "expires_after" => "2018-03-01 15:29:26+00:00"
-              }]
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          post!: fn _, _, _ ->
+            %HTTPoison.Response{
+              body: %{
+                "users" => [
+                  %{
+                    "token" => "dXNlcm5hbWU6cGFzc3dvcmQ=",
+                    "expires_after" => "2018-03-01 15:29:26+00:00"
+                  }
+                ]
+              }
             }
-          }
-        end
-      ]
-    }]) do
+          end
+        ]
+      }
+    ]) do
       provider = %WhatsappProvider{
         name: "My company",
         username: "username",

@@ -33,6 +33,7 @@ defmodule Whatsapp.Api.Media do
       "/media/#{media.id}"
       |> WhatsappApiRequestMedia.get!(nil, [auth_header])
       |> @parser.parse(:media_download)
+
     {:ok, path} = Briefly.create(extname: ".#{media.extension}")
     File.write!(path, media_response)
     {:ok, path}

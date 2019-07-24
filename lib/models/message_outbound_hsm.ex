@@ -33,7 +33,7 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
   def new(options) do
     attrs =
       options
-      |> Enum.into(Map.new)
+      |> Enum.into(Map.new())
       |> Map.merge(@default_values)
 
     Kernel.struct(__MODULE__, attrs)

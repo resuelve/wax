@@ -11,7 +11,7 @@ defmodule Whatsapp.Models.MessageOutbound do
     recipient: "individual",
     to: nil,
     type: "text",
-    body: nil,
+    body: nil
   )
 
   @type t :: %__MODULE__{}
@@ -23,7 +23,7 @@ defmodule Whatsapp.Models.MessageOutbound do
   def new(options) do
     attrs =
       options
-      |> Enum.into(Map.new)
+      |> Enum.into(Map.new())
 
     Kernel.struct(__MODULE__, attrs)
   end
