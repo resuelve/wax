@@ -1,6 +1,6 @@
 # WhatsappApi
 
-**TODO: Add description**
+Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.com/docs/whatsapp
 
 ## Installation
 
@@ -51,14 +51,14 @@ end
 
 Now you can use the provider name to authenticate
 
-```
+```elixir
 iex> message = MessageOutbound.new(to: "wa_id", body: "Hi!")
 iex> WhatsappApi.send(message, "My company")
 ```
 
 ## Without GenServer Auth
 
-```
+```elixir
 iex> message = MessageOutbound.new(to: "wa_id", body: "Hi!")
 iex> auth_header = [{"Authorization", "Bearer #{token}"}]
 iex> Whatsapp.Api.Messages.send(message, auth_header)
