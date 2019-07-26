@@ -5,15 +5,13 @@ defmodule Whatsapp.Api.ContactsTest do
   alias Whatsapp.Api.Contacts
   alias Whatsapp.Models.WhatsappProvider
 
-  @auth_header {"Authorization", "Basic token"}
-
-  test "Should check contact" do
+  test "Should check contact", %{token_info: token_info} do
     with_mocks([
       {
         WhatsappApiRequest,
         [],
         [
-          post!: fn _, _, _ ->
+          rate_limit_request: fn _, _, _, _ ->
             %HTTPoison.Response{
               body: %{
                 "contacts" => [
@@ -29,7 +27,7 @@ defmodule Whatsapp.Api.ContactsTest do
         ]
       }
     ]) do
-      assert Contacts.check("5566295500", @auth_header) == %{
+      assert Contacts.check(token_info, "5566295500") == %{
                "contacts" => [
                  %{
                    "input" => "1-631-555-1002",

@@ -1,3 +1,3 @@
 defmodule Whatsapp.Models.WhatsappProvider do
-  defstruct [:name, :username, :password]
+  defstruct [:name, :url, :username, :password]
 end

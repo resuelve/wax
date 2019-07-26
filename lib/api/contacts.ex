@@ -8,20 +8,20 @@ defmodule Whatsapp.Api.Contacts do
   @doc """
   Valida la lista de teléfonos dada con el provider de Whatsapp
   """
-  @spec check_list([String.t()], tuple(), boolean) :: map
-  def check_list(phone_list, auth_header, wait \\ true) when is_list(phone_list) do
-    _check_list(phone_list, auth_header, wait)
+  @spec check_list(tuple(), [String.t()], boolean) :: map
+  def check_list(token_info, phone_list, wait \\ true) when is_list(phone_list) do
+    _check_list(token_info, phone_list, wait)
   end
 
   @doc """
   Valida un teléfono con el provider de Whatsapp
   """
-  @spec check(String.t(), tuple(), boolean) :: boolean
-  def check(phone, auth_header, wait \\ true) do
-    _check_list([phone], auth_header, wait)
+  @spec check(tuple(), String.t(), boolean) :: boolean
+  def check(token_info, phone, wait \\ true) do
+    _check_list(token_info, [phone], wait)
   end
 
-  defp _check_list(phone_list, auth_header, wait) do
+  defp _check_list({url, auth_header}, phone_list, wait) do
     blocking = (wait && "wait") || "no_wait"
 
     data = %{
@@ -29,8 +29,9 @@ defmodule Whatsapp.Api.Contacts do
       contacts: phone_list
     }
 
-    "/contacts"
-    |> WhatsappApiRequest.post!(data, [auth_header])
+    url
+    |> Kernel.<>("/contacts")
+    |> WhatsappApiRequest.rate_limit_request(:post!, data, [auth_header])
     |> @parser.parse(:contacts_check)
   end
 end

@@ -23,12 +23,13 @@ defmodule Whatsapp.Auth.Server do
     Logger.info("Whatsapp Auth System online")
     providers = Keyword.fetch!(args, :providers)
 
-    tokens =
-      providers
-      |> get_new_tokens()
-
     schedule_token_check()
-    {:ok, %{tokens: tokens, providers: providers}}
+    {
+      :ok, %{
+        tokens: get_tokens_info(providers),
+        providers: providers
+      }
+    }
   end
 
   @doc """
@@ -48,10 +49,10 @@ defmodule Whatsapp.Auth.Server do
   end
 
   @doc """
-  Obtiene el token de autenticación del producto dado
+  Obtiene el token de autenticación y la url del producto dado
   """
-  @spec get_token(binary()) :: binary() | nil
-  def get_token(product) do
+  @spec get_token_info(binary()) :: binary() | nil
+  def get_token_info(product) do
     GenServer.call(@server, {:lookup_token, product})
   end
 
@@ -77,9 +78,9 @@ defmodule Whatsapp.Auth.Server do
   tipo info para token check diario
   """
   @spec handle_info(:token_check, any()) :: {:noreply, any()}
-  def handle_info(:token_check, state) do
+  def handle_info(:token_check, %{tokens: tokens, providers: providers} = state) do
     Logger.info("Checking tokens")
-    tokens = get_new_tokens(state)
+    tokens = update_expired_tokens(providers, tokens)
     schedule_token_check()
     {:noreply, Map.put(state, :tokens, tokens)}
   end
@@ -98,8 +99,12 @@ defmodule Whatsapp.Auth.Server do
   """
   @spec handle_call({:lookup_token, binary()}, any(), any()) :: {:reply, any(), any()}
   def handle_call({:lookup_token, product}, _from, state) do
-    token = get_in(state.tokens, [product, "token"]) || ""
-    {:reply, token, state}
+    %{"token" => token, "url" => url} = Map.get(state.tokens, product)
+    {:reply, {url, get_auth_header(token)}, state}
+  end
+
+  defp get_auth_header(token) do
+    {"Authorization", "Bearer #{token}"}
   end
 
   # Programa el siguiente check de tokens
@@ -108,36 +113,40 @@ defmodule Whatsapp.Auth.Server do
     Process.send_after(self(), :token_check, @daily)
   end
 
-  @doc """
-  Obtiene los token nuevos o genera un token de prueba
-  """
-  @spec get_new_tokens(boolean) :: map
-  def get_new_tokens(%{tokens: false}) do
-    %{
-      "test" => %{
-        "token" => "TOKEN",
-        "expires_after" => Timex.now() |> Timex.shift(hours: 12)
-      }
-    }
-  end
+  def update_expired_tokens(providers, credentials) do
+    Enum.reduce(
+      providers,
+      %{},
+      fn provider, credentials ->
+        credentials_product = Map.get(credentials, provider.name)
+        expires = Map.get(credentials_product, "expires_after")
+        hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
 
-  def get_new_tokens(%{tokens: tokens}) when is_map(tokens) do
-    tokens
-    |> Map.keys()
-    |> Enum.reduce(%{}, fn product, acc ->
-      token = Map.get(tokens, product)
-      expires = Map.get(token, "expires_after")
-      hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+        credentials = (hours_diff < 24 && Manager.login(provider)) || credentials
 
-      token = (hours_diff < 24 && Manager.login(product)) || token
-      Map.put(acc, product, token)
+        Map.put(
+          credentials,
+          provider.name,
+          Map.put(credentials, "url", provider.url)
+        )
     end)
   end
 
-  def get_new_tokens(providers) do
-    providers
-    |> Enum.reduce(%{}, fn provider, tokens ->
-      Map.put(tokens, provider.name, Manager.login(provider))
+  def get_tokens_info(providers) do
+    Enum.reduce(
+      providers,
+      %{},
+      fn provider, credentials  ->
+        credentials_provider =
+          provider
+          |> Manager.login()
+          |> Map.put("url", provider.url)
+
+        Map.put(
+          credentials,
+          provider.name,
+          credentials_provider
+        )
     end)
   end
 end

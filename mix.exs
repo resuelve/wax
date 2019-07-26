@@ -31,7 +31,8 @@ defmodule WhatsappApi.MixProject do
       {:httpoison, "~> 1.3"},
       {:mock, "~> 0.3.3", only: :test},
       {:timex, "~> 3.3"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:ex_rated, "~> 1.2"}
     ]
   end
 
