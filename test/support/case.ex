@@ -1,7 +1,6 @@
 defmodule Whatsapp.Case do
   use ExUnit.CaseTemplate
 
-
   setup do
     {
       :ok,
