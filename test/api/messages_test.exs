@@ -45,8 +45,6 @@ defmodule Whatsapp.Api.MessagesTest do
       message =
         MessageOutboundHsm.new(
           to: "15162837151",
-          type: "text",
-          body: "hola!"
         )
 
       assert Messages.send_hsm(token_info, message) == %{}

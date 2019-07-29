@@ -17,7 +17,7 @@ defmodule WhatsappApiRequest do
   end
 
   def rate_limit_request(url, method, data, headers) do
-    [_, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
         apply(__MODULE__, method, [data, url, headers])
