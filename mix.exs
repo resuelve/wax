@@ -27,7 +27,7 @@ defmodule WhatsappApi.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.18.0", only: :dev},
+      {:ex_doc, "~> 0.21.0", only: :dev},
       {:httpoison, "~> 1.3"},
       {:mock, "~> 0.3.3", only: :test},
       {:timex, "~> 3.3"},
