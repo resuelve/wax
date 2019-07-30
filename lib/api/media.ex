@@ -14,24 +14,25 @@ defmodule Whatsapp.Api.Media do
   @doc """
   Carga el archivo al servidor de Whatsapp
   """
-  @spec upload(Media.t(), tuple()) :: tuple
-  def upload(%MessageOutboundMedia{data: data, mime_type: mime_type}, auth_header) do
+  @spec upload(tuple(), Media.t()) :: tuple
+  def upload({url, auth_header}, %MessageOutboundMedia{data: data, mime_type: mime_type}) do
     headers = [{"Content-Type", mime_type}, auth_header]
 
-    "/media"
-    |> WhatsappApiRequestMedia.post!(data, headers)
+    url
+    |> Kernel.<>("/media")
+    |> WhatsappApiRequestMedia.rate_limit_request(:post!, data, headers)
     |> @parser.parse(:media_upload)
   end
 
   @doc """
   Obtiene el archivo media del servidor de la aplicación de Whatsapp
   """
-  @spec download(MediaDownload.t(), tuple()) :: tuple
-  def download(%MediaDownload{} = media, auth_header) do
+  @spec download(tuple(), MediaDownload.t()) :: tuple
+  def download({url, auth_header}, %MediaDownload{} = media) do
     # Se envia no_parse: true para que no intente convertir la respuesta a JSON
     media_response =
       "/media/#{media.id}"
-      |> WhatsappApiRequestMedia.get!(nil, [auth_header])
+      |> WhatsappApiRequestMedia.rate_limit_request(:get!, nil, [auth_header])
       |> @parser.parse(:media_download)
 
     {:ok, path} = Briefly.create(extname: ".#{media.extension}")

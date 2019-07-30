@@ -10,30 +10,28 @@ defmodule WhatsappApi do
   alias Whatsapp.Api.Contacts
   alias Whatsapp.Auth.Server, as: AuthServer
 
-  def get_auth_header(provider) do
-    token = AuthServer.get_token(provider)
-    {"Authorization", "Bearer #{token}"}
-  end
-
   @doc """
   Sends a text message
   """
   @spec send_message(MessageOutbound.t(), String.t()) :: map()
   def send_message(%MessageOutbound{} = message, provider) do
-    auth_header = get_auth_header(provider)
-    Messages.send(message, auth_header)
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send(message)
   end
 
   @spec send_hsm(MessageOutboundHsm.t(), String.t()) :: map()
   def send_hsm(%MessageOutboundHsm{} = message, provider) do
-    auth_header = get_auth_header(provider)
-    Messages.send_hsm(message, auth_header)
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send_hsm(message)
   end
 
   @spec send_media(MessageOutboundMedia.t(), String.t()) :: map()
   def send_media(%MessageOutboundMedia{} = message, provider) do
-    auth_header = get_auth_header(provider)
-    Messages.send_media(message, auth_header)
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send_media(message)
   end
 
   @doc """
@@ -41,7 +39,8 @@ defmodule WhatsappApi do
   """
   @spec check(String.t(), String.t()) :: map()
   def check(phone, provider) do
-    auth_header = get_auth_header(provider)
-    Contacts.check(phone, auth_header)
+    provider
+    |> AuthServer.get_token_info()
+    |> Contacts.check(phone)
   end
 end

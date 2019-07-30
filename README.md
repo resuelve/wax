@@ -37,6 +37,7 @@ defmodule MyApp.Application do
       worker(Whatsapp.Auth.Server, [[
         %WhatsappProvider{
           name: "My company",
+          url: "https://wa.io:9090/v1",
           username: "username",
           password: "password"
         }
@@ -61,7 +62,7 @@ iex> WhatsappApi.send(message, "My company")
 ```elixir
 iex> message = MessageOutbound.new(to: "wa_id", body: "Hi!")
 iex> auth_header = [{"Authorization", "Bearer #{token}"}]
-iex> Whatsapp.Api.Messages.send(message, auth_header)
+iex> Whatsapp.Api.Messages.send({"https://wa.io:9090/v1", auth_header, message)
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)

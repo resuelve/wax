@@ -7,15 +7,13 @@ defmodule Whatsapp.Api.MessagesTest do
   alias Whatsapp.Models.MessageOutboundHsm
   alias Whatsapp.Models.MessageOutboundMedia
 
-  @auth_header {"Authorization", "Bearer token"}
-
-  test "Should send text message" do
+  test "Should send text message", %{token_info: token_info} do
     with_mocks([
       {
         WhatsappApiRequest,
         [],
         [
-          post!: fn _, _, _ ->
+          rate_limit_request: fn _, _, _, _ ->
             %HTTPoison.Response{body: %{}}
           end
         ]
@@ -28,17 +26,17 @@ defmodule Whatsapp.Api.MessagesTest do
           body: "hola!"
         )
 
-      assert Messages.send(message, @auth_header) == %{}
+      assert Messages.send(token_info, message) == %{}
     end
   end
 
-  test "Should send hsm message" do
+  test "Should send hsm message", %{token_info: token_info} do
     with_mocks([
       {
         WhatsappApiRequest,
         [],
         [
-          post!: fn _, _, _ ->
+          rate_limit_request: fn _, _, _, _ ->
             %HTTPoison.Response{body: %{}}
           end
         ]
@@ -47,21 +45,19 @@ defmodule Whatsapp.Api.MessagesTest do
       message =
         MessageOutboundHsm.new(
           to: "15162837151",
-          type: "text",
-          body: "hola!"
         )
 
-      assert Messages.send_hsm(message, @auth_header) == %{}
+      assert Messages.send_hsm(token_info, message) == %{}
     end
   end
 
-  test "Should send media message" do
+  test "Should send media message", %{token_info: token_info} do
     with_mocks([
       {
         WhatsappApiRequest,
         [],
         [
-          post!: fn "/messages", _, _ ->
+          rate_limit_request: fn _, :post!, _, _ ->
             %HTTPoison.Response{body: %{}}
           end
         ]
@@ -70,7 +66,7 @@ defmodule Whatsapp.Api.MessagesTest do
         WhatsappApiRequestMedia,
         [],
         [
-          post!: fn "/media", _, _ ->
+          rate_limit_request: fn _, :post!, _, _ ->
             %HTTPoison.Response{body: %{"media" => [%{"id" => 1}]}}
           end
         ]
@@ -84,7 +80,7 @@ defmodule Whatsapp.Api.MessagesTest do
           data: "data:text/plain;base64,SGVsbG8gd29ybGQh"
         )
 
-      assert Messages.send_media(message, @auth_header) == %{}
+      assert Messages.send_media(token_info, message) == %{}
     end
   end
 end

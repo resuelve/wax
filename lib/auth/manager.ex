@@ -13,7 +13,7 @@ defmodule Whatsapp.Auth.Manager do
   """
   @spec login(WhatsappProvider.t()) :: map
   def login(%WhatsappProvider{} = provider) do
-    case Users.login(generate_token(provider)) do
+    case Users.login(provider.url, generate_token(provider)) do
       %{"users" => [login_data]} ->
         expires =
           login_data
@@ -37,7 +37,7 @@ defmodule Whatsapp.Auth.Manager do
   """
   @spec logout(WhatsappProvider.t(), binary()) :: :ok | :error
   def logout(%WhatsappProvider{} = provider, token) do
-    case Users.logout(token) do
+    case Users.logout(provider.url, token) do
       {:ok, _} ->
         Logger.info(fn -> "Logout #{provider.name} successful" end)
         :ok

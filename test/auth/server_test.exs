@@ -1,4 +1,4 @@
-defmodule WhatsappApiTest do
+defmodule Whatsapp.Auth.ServerTest do
   use ExUnit.Case
   doctest WhatsappApi
 
@@ -30,12 +30,14 @@ defmodule WhatsappApiTest do
       provider = %WhatsappProvider{
         name: "My company",
         username: "username",
-        password: "password"
+        password: "password",
+        url: "https://wa.io:9090/v1"
       }
 
-      {:ok, pid} = Server.start_link([provider])
-      auth_header = WhatsappApi.get_auth_header("My company")
+      {:ok, _pid} = Server.start_link([provider])
+      {url, auth_header} = Server.get_token_info("My company")
 
+      assert url == "https://wa.io:9090/v1"
       assert auth_header == {"Authorization", "Bearer dXNlcm5hbWU6cGFzc3dvcmQ="}
     end
   end
