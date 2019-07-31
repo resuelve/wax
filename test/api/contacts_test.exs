@@ -16,6 +16,11 @@ defmodule Whatsapp.Api.ContactsTest do
               body: %{
                 "contacts" => [
                   %{
+                    "input" => "5566295500",
+                    "status" => "valid",
+                    "wa_id" => "5215566295500"
+                  },
+                  %{
                     "input" => "1-631-555-1002",
                     "status" => "invalid"
                   }
@@ -27,8 +32,13 @@ defmodule Whatsapp.Api.ContactsTest do
         ]
       }
     ]) do
-      assert Contacts.check(token_info, "5566295500") == %{
+      assert Contacts.check(token_info, ["5566295500", "1-631-555-1002"]) == %{
                "contacts" => [
+                 %{
+                    "input" => "5566295500",
+                    "status" => "valid",
+                    "wa_id" => "5215566295500"
+                  },
                  %{
                    "input" => "1-631-555-1002",
                    "status" => "invalid"
