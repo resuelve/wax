@@ -15,6 +15,12 @@ def deps do
 end
 ```
 
+Setup default parser in `config.ex`
+
+```elixir
+config :whatsapp_api, parser: Whatsapp.Parser
+```
+
 ## Using GenServer Auth
 
 ```elixir
