@@ -51,6 +51,10 @@ defmodule Whatsapp.Api.MessagesTest do
       message =
         MessageOutboundHsm.new(
           to: "15162837151",
+          namespace: "resuelve:fintech",
+          element_name: "welcome",
+          language_code: "es",
+          params: []
         )
 
       assert Messages.send_hsm(token_info, message) == @response
