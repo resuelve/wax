@@ -13,6 +13,7 @@ defmodule Whatsapp.Auth.Server do
 
   alias __MODULE__
   alias Whatsapp.Auth.Manager
+  alias Whatsapp.Models.WhatsappProvider
 
   @doc """
   Callback de inicio del GenServer
@@ -21,7 +22,10 @@ defmodule Whatsapp.Auth.Server do
   def init(args) do
     Process.flag(:trap_exit, true)
     Logger.info("Whatsapp Auth System online")
-    providers = Keyword.fetch!(args, :providers)
+    providers =
+      args
+      |> Keyword.fetch!(:providers)
+      |> _remove_invalid_providers()
 
     schedule_token_check()
     {
@@ -148,5 +152,16 @@ defmodule Whatsapp.Auth.Server do
           credentials_provider
         )
     end)
+  end
+
+  defp _remove_invalid_providers([]), do: []
+  defp _remove_invalid_providers([%WhatsappProvider{name: nil} | tail]) do
+    _remove_invalid_providers(tail)
+  end
+  defp _remove_invalid_providers([%WhatsappProvider{name: ""} | tail]) do
+    _remove_invalid_providers(tail)
+  end
+  defp _remove_invalid_providers([provider | tail]) do
+    [provider | _remove_invalid_providers(tail)]
   end
 end

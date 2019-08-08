@@ -27,14 +27,22 @@ defmodule Whatsapp.Auth.ServerTest do
         ]
       }
     ]) do
-      provider = %WhatsappProvider{
-        name: "My company",
-        username: "username",
-        password: "password",
-        url: "https://wa.io:9090/v1"
-      }
+      providers = [
+        %WhatsappProvider{
+          name: "My company",
+          username: "username",
+          password: "password",
+          url: "https://wa.io:9090/v1"
+        },
+        %WhatsappProvider{
+          name: "",
+          username: "",
+          password: "",
+          url: ""
+        }
+      ]
 
-      {:ok, _pid} = Server.start_link([provider])
+      {:ok, _pid} = Server.start_link(providers)
       {url, auth_header} = Server.get_token_info("My company")
 
       assert url == "https://wa.io:9090/v1"
