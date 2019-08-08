@@ -156,10 +156,10 @@ defmodule Whatsapp.Auth.Server do
   end
 
   defp _remove_invalid_providers([]), do: []
-  defp _remove_invalid_providers([%{name: nil} | tail]) do
+  defp _remove_invalid_providers([%{username: nil} | tail]) do
     _remove_invalid_providers(tail)
   end
-  defp _remove_invalid_providers([%{name: ""} | tail]) do
+  defp _remove_invalid_providers([%{username: ""} | tail]) do
     _remove_invalid_providers(tail)
   end
   defp _remove_invalid_providers([provider | tail]) do
