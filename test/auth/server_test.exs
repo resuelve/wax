@@ -4,7 +4,6 @@ defmodule Whatsapp.Auth.ServerTest do
 
   import Mock
   alias Whatsapp.Auth.Server
-  alias Whatsapp.Models.WhatsappProvider
 
   test "Should get auth header" do
     with_mocks([
@@ -28,13 +27,13 @@ defmodule Whatsapp.Auth.ServerTest do
       }
     ]) do
       providers = [
-        %WhatsappProvider{
+        %{
           name: "My company",
           username: "username",
           password: "password",
           url: "https://wa.io:9090/v1"
         },
-        %WhatsappProvider{
+        %{
           name: "",
           username: "",
           password: "",

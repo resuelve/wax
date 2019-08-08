@@ -26,6 +26,7 @@ defmodule Whatsapp.Auth.Server do
       args
       |> Keyword.fetch!(:providers)
       |> _remove_invalid_providers()
+      |> Enum.map(&(struct(WhatsappProvider, &1)))
 
     schedule_token_check()
     {
@@ -155,10 +156,10 @@ defmodule Whatsapp.Auth.Server do
   end
 
   defp _remove_invalid_providers([]), do: []
-  defp _remove_invalid_providers([%WhatsappProvider{name: nil} | tail]) do
+  defp _remove_invalid_providers([%{name: nil} | tail]) do
     _remove_invalid_providers(tail)
   end
-  defp _remove_invalid_providers([%WhatsappProvider{name: ""} | tail]) do
+  defp _remove_invalid_providers([%{name: ""} | tail]) do
     _remove_invalid_providers(tail)
   end
   defp _remove_invalid_providers([provider | tail]) do
