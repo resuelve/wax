@@ -15,9 +15,10 @@ def deps do
 end
 ```
 
-Config
-```
-config :whatsapp_api, url_base: "https://whatsapp-api.io:9090/v1"
+Setup default parser in `config.ex`
+
+```elixir
+config :whatsapp_api, parser: Whatsapp.Parser
 ```
 
 ## Using GenServer Auth
@@ -53,7 +54,8 @@ end
 Now you can use the provider name to authenticate
 
 ```elixir
-iex> message = MessageOutbound.new(to: "wa_id", body: "Hi!")
+iex> %{"contacts" => [%{"wa_id" => wa_id}] = WhatsappApi.check("5566295500", "My company")
+iex> message = MessageOutbound.new(to: wa_id, body: "Hi!")
 iex> WhatsappApi.send(message, "My company")
 ```
 
