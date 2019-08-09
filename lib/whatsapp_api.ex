@@ -8,6 +8,7 @@ defmodule WhatsappApi do
   alias Whatsapp.Models.MessageOutboundHsm
   alias Whatsapp.Models.MessageOutboundMedia
   alias Whatsapp.Api.Contacts
+  alias Whatsapp.Api.Settings
   alias Whatsapp.Auth.Server, as: AuthServer
 
   @doc """
@@ -52,5 +53,25 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Contacts.check_list(phone_list)
+  end
+
+  @doc """
+  Obtener la configuración de la cuenta
+  """
+  @spec get_application(String.t()) :: map()
+  def get_application(provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Settings.get_application()
+  end
+
+  @doc """
+  Actualiza la configuración de la cuenta
+  """
+  @spec update_application(map(), String.t()) :: map()
+  def update_application(data, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Settings.update_application(data)
   end
 end
