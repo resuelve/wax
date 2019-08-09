@@ -43,4 +43,14 @@ defmodule WhatsappApi do
     |> AuthServer.get_token_info()
     |> Contacts.check(phone)
   end
+
+  @doc """
+  Check if phone list numbers are valid an gets wa_id
+  """
+  @spec check_list([String.t()], String.t()) :: map()
+  def check_list(phone_list, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Contacts.check_list(phone_list)
+  end
 end
