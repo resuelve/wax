@@ -84,7 +84,8 @@ defmodule Whatsapp.Api.MessagesTest do
         MessageOutboundMedia.new(
           to: "15162837151",
           file_name: "mi_archivo.pdf",
-          data: "data:text/plain;base64,SGVsbG8gd29ybGQh"
+          data: "data:text/plain;base64,SGVsbG8gd29ybGQh",
+          type: "document"
         )
 
       assert Messages.send_media(token_info, message) == @response

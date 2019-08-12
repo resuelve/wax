@@ -3,6 +3,10 @@ defmodule WhatsappApiRequestMedia do
 
   @default_headers []
 
+  # 20 requests per second
+  @limit 20
+  @scale 1_000
+
   def process_request_options(options) do
     [
       hackney: [:insecure],
@@ -13,18 +17,22 @@ defmodule WhatsappApiRequestMedia do
   end
 
   def rate_limit_request(url, method, data, headers) do
-    [_, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
-        apply(__MODULE__, method, [data, url, headers])
+        apply(__MODULE__, method, [url, data, headers])
 
       {:error, _} ->
         :timer.sleep(100)
-        rate_limit_request(url, data, method, headers)
+        rate_limit_request(url, method, data, headers)
     end
   end
 
   def process_request_headers(headers) do
     headers ++ @default_headers
+  end
+
+  def process_response_body(body) do
+    Poison.decode!(body)
   end
 end
