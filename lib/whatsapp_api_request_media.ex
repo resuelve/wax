@@ -3,11 +3,6 @@ defmodule WhatsappApiRequestMedia do
 
   @default_headers []
 
-  def process_request_url(url) do
-    base_url = Application.get_env(:whatsapp_api, :url_base) || ""
-    base_url <> url
-  end
-
   def process_request_options(options) do
     [
       hackney: [:insecure],

@@ -87,12 +87,12 @@ defmodule Whatsapp.Models.MessageOutboundMedia do
     binary_data =
       if String.starts_with?(binary_data, "data:") do
         [_, binary_data] = String.split(binary_data, ",", parts: 2)
-        binary_data
+        Base.decode64!(binary_data)
       else
         binary_data
       end
 
-    %{msg | data: Base.decode64!(binary_data)}
+    %{msg | data: binary_data}
   end
 
   def _add_binary_data(_), do: {:error, "Invalid data"}
