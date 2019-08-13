@@ -31,12 +31,9 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
   """
   @spec new(Keyword.t()) :: __MODULE__.t()
   def new(options) do
-    attrs =
-      options
-      |> Enum.into(Map.new())
-      |> Map.merge(@default_values)
+    attrs = Enum.into(options, Map.new())
 
-    Kernel.struct(__MODULE__, attrs)
+    Kernel.struct(__MODULE__, Map.merge(@default_values, attrs))
   end
 
   # Valida que el tipo de selección de lenguaje sea válido
