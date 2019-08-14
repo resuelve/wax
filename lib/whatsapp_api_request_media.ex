@@ -28,7 +28,7 @@ defmodule WhatsappApiRequestMedia do
     end
   end
 
-  def process_request_headers(headers) do
+  def process_request_headers(headers \\ []) do
     headers ++ @default_headers
   end
 

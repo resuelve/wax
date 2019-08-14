@@ -31,7 +31,8 @@ defmodule Whatsapp.Api.Media do
   def download({url, auth_header}, %MediaDownload{} = media) do
     # Se envia no_parse: true para que no intente convertir la respuesta a JSON
     media_response =
-      "/media/#{media.id}"
+      url
+      |> Kernel.<>("/media/#{media.id}")
       |> WhatsappApiRequestMedia.rate_limit_request(:get!, nil, [auth_header])
       |> @parser.parse(:media_download)
 

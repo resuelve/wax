@@ -32,7 +32,7 @@ defmodule WhatsappApiRequest do
     Poison.encode!(body)
   end
 
-  def process_request_headers(headers) do
+  def process_request_headers(headers \\ []) do
     headers ++ @default_headers
   end
 
