@@ -27,16 +27,10 @@ defmodule Whatsapp.Api.Media do
   @doc """
   Obtiene el archivo media del servidor de la aplicación de Whatsapp
   """
-  @spec download(tuple(), MediaDownload.t()) :: tuple
-  def download({url, auth_header}, %MediaDownload{} = media) do
-    # Se envia no_parse: true para que no intente convertir la respuesta a JSON
-    media_response =
-      "/media/#{media.id}"
-      |> WhatsappApiRequestMedia.rate_limit_request(:get!, nil, [auth_header])
-      |> @parser.parse(:media_download)
-
-    {:ok, path} = Briefly.create(extname: ".#{media.extension}")
-    File.write!(path, media_response)
-    {:ok, path}
+  @spec download(tuple(), integer | String.t()) :: tuple
+  def download({url, auth_header}, media_id) do
+    "/media/#{media_id}"
+    |> WhatsappApiRequestMedia.rate_limit_request(:get!, nil, [auth_header])
+    |> @parser.parse(:media_download)
   end
 end

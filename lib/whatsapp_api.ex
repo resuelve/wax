@@ -8,6 +8,7 @@ defmodule WhatsappApi do
   alias Whatsapp.Models.MessageOutboundHsm
   alias Whatsapp.Models.MessageOutboundMedia
   alias Whatsapp.Api.Contacts
+  alias Whatsapp.Api.Media
   alias Whatsapp.Api.Settings
   alias Whatsapp.Auth.Server, as: AuthServer
 
@@ -53,6 +54,12 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Contacts.check_list(phone_list)
+  end
+
+  def download(media_id, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Media.download(media_id)
   end
 
   @doc """
