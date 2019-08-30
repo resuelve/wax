@@ -29,8 +29,9 @@ defmodule Whatsapp.Api.Media do
   """
   @spec download(tuple(), integer | String.t()) :: tuple
   def download({url, auth_header}, media_id) do
-    "/media/#{media_id}"
-    |> WhatsappApiRequestMedia.rate_limit_request(:get!, nil, [auth_header])
+    url
+    |> Kernel.<>("/media/#{media_id}")
+    |> WhatsappApiRequestMedia.rate_limit_request(:get!, [auth_header])
     |> @parser.parse(:media_download)
   end
 end

@@ -10,7 +10,7 @@ defmodule Whatsapp.Api.MediaTest do
         WhatsappApiRequestMedia,
         [],
         [
-          rate_limit_request: fn _, _, _, _ ->
+          rate_limit_request: fn _, _, _ ->
             %HTTPoison.Response{
               body: "binary-data"
             }
