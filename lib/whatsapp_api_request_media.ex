@@ -44,7 +44,11 @@ defmodule WhatsappApiRequestMedia do
     headers ++ @default_headers
   end
 
-  def process_response_body(body) do
+  def process_response_body("{" <> _ = body) do
     Poison.decode!(body)
+  end
+
+  def process_response_body(body) do
+    body
   end
 end
