@@ -58,20 +58,4 @@ defmodule Whatsapp.Models.MediaHelper do
         nil
     end
   end
-
-  @doc """
-  Regresa el nombre del archivo si existe. Si no, se genera un UUID como nombre
-  """
-  @spec get_media_name(any()) :: String.t()
-  def get_media_name(%{"name" => name}) when name in ["", nil] do
-    get_media_name(nil)
-  end
-
-  def get_media_name(%{"name" => name}) do
-    name
-  end
-
-  def get_media_name(_) do
-    Ecto.UUID.generate()
-  end
 end

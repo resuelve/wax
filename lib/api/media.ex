@@ -6,7 +6,6 @@ defmodule Whatsapp.Api.Media do
   @parser Application.get_env(:whatsapp_api, :parser)
 
   alias Whatsapp.Models.MessageOutboundMedia
-  alias Whatsapp.Models.MediaDownload
   alias WhatsappApiRequestMedia
 
   require Logger
