@@ -47,7 +47,7 @@ defmodule WhatsappApiRequestMedia do
   end
 
   def process_response_body("{" <> _ = body) do
-    Poison.decode!(body)
+    Jason.decode!(body)
   end
 
   def process_response_body(body) do

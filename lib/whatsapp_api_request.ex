@@ -43,7 +43,7 @@ defmodule WhatsappApiRequest do
   end
 
   def process_request_body(body) do
-    Poison.encode!(body)
+    Jason.encode!(body)
   end
 
   def process_request_headers(headers \\ []) do
@@ -51,6 +51,6 @@ defmodule WhatsappApiRequest do
   end
 
   def process_response_body(body) do
-    Poison.decode!(body)
+    Jason.decode!(body)
   end
 end
