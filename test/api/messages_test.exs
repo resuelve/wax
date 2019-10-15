@@ -8,9 +8,11 @@ defmodule Whatsapp.Api.MessagesTest do
   alias Whatsapp.Models.MessageOutboundMedia
 
   @response %{
-    "messages" => [%{
-      "id" => "message-id"
-    }]
+    "messages" => [
+      %{
+        "id" => "message-id"
+      }
+    ]
   }
 
   @http_success_response %HTTPoison.Response{
