@@ -43,7 +43,7 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
     {:ok, msg}
   end
 
-  defp _validate_policy(message), do: {:error, "Invalid language policy"}
+  defp _validate_policy(_message), do: {:error, "Invalid language policy"}
 
   def validate(message) do
     with {:ok, message} <- _validate_policy(message) do

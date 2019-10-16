@@ -18,6 +18,7 @@ defmodule WhatsappApiRequestMedia do
 
   def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!] do
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
         apply(__MODULE__, method_get, [url, headers])
@@ -30,6 +31,7 @@ defmodule WhatsappApiRequestMedia do
 
   def rate_limit_request(url, method, data, headers) do
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
         apply(__MODULE__, method, [url, data, headers])
@@ -45,7 +47,7 @@ defmodule WhatsappApiRequestMedia do
   end
 
   def process_response_body("{" <> _ = body) do
-    Poison.decode!(body)
+    Jason.decode!(body)
   end
 
   def process_response_body(body) do

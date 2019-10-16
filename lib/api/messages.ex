@@ -9,7 +9,6 @@ defmodule Whatsapp.Api.Messages do
   alias Whatsapp.Models.MessageOutboundHsm
   alias Whatsapp.Models.MessageOutboundMedia
   alias WhatsappApiRequest
-  alias Whatsapp.Models.Media, as: MediaModel
   alias Whatsapp.Api.Media, as: MediaApi
 
   require Logger

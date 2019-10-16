@@ -22,15 +22,18 @@ defmodule Whatsapp.Auth.Server do
   def init(args) do
     Process.flag(:trap_exit, true)
     Logger.info("Whatsapp Auth System online")
+
     providers =
       args
       |> Keyword.fetch!(:providers)
       |> _remove_invalid_providers()
-      |> Enum.map(&(struct(WhatsappProvider, &1)))
+      |> Enum.map(&struct(WhatsappProvider, &1))
 
     schedule_token_check()
+
     {
-      :ok, %{
+      :ok,
+      %{
         tokens: get_tokens_info(providers),
         providers: providers
       }
@@ -134,14 +137,15 @@ defmodule Whatsapp.Auth.Server do
           provider.name,
           Map.put(credentials, "url", provider.url)
         )
-    end)
+      end
+    )
   end
 
   def get_tokens_info(providers) do
     Enum.reduce(
       providers,
       %{},
-      fn provider, credentials  ->
+      fn provider, credentials ->
         credentials_provider =
           provider
           |> Manager.login()
@@ -152,16 +156,20 @@ defmodule Whatsapp.Auth.Server do
           provider.name,
           credentials_provider
         )
-    end)
+      end
+    )
   end
 
   defp _remove_invalid_providers([]), do: []
+
   defp _remove_invalid_providers([%{username: nil} | tail]) do
     _remove_invalid_providers(tail)
   end
+
   defp _remove_invalid_providers([%{username: ""} | tail]) do
     _remove_invalid_providers(tail)
   end
+
   defp _remove_invalid_providers([provider | tail]) do
     [provider | _remove_invalid_providers(tail)]
   end
