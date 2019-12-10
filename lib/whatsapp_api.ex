@@ -10,6 +10,7 @@ defmodule WhatsappApi do
   alias Whatsapp.Api.Contacts
   alias Whatsapp.Api.Media
   alias Whatsapp.Api.Settings
+  alias Whatsapp.Api.Health
   alias Whatsapp.Auth.Server, as: AuthServer
 
   @doc """
@@ -80,5 +81,15 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Settings.update_application(data)
+  end
+
+  @doc """
+  Check whatsapp health
+  """
+  @spec get_health(String.t()) :: map()
+  def get_health(provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Health.get_summary()
   end
 end

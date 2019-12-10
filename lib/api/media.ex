@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Media do
   Modulo para el manejo de archivos media de Whatsapp
   """
 
-  @parser Application.get_env(:whatsapp_api, :parser)
+  @parser Application.get_env(:wax, :parser)
 
   alias Whatsapp.Models.MessageOutboundMedia
   alias WhatsappApiRequestMedia

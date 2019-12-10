@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Users do
   Módulo para manejo de autenticación con Whatsapp
   """
 
-  @parser Application.get_env(:whatsapp_api, :parser)
+  @parser Application.get_env(:wax, :parser)
 
   alias WhatsappApiRequest
 
