@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Contacts do
   Módulo para el manejo de contactos de Whatsapp
   """
 
-  @parser Application.get_env(:whatsapp_api, :parser)
+  @parser Application.get_env(:wax, :parser)
 
   @doc """
   Valida la lista de teléfonos dada con el provider de Whatsapp
