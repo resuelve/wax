@@ -13,7 +13,8 @@ defmodule Whatsapp.Auth.Manager do
   """
   @spec login(WhatsappProvider.t()) :: map
   def login(%WhatsappProvider{} = provider) do
-    case Users.login(provider.url, generate_token(provider)) do
+    auth_header = generate_login_auth_header(provider.username, provider.password)
+    case Users.login({provider.url, auth_header}) do
       %{"users" => [login_data]} ->
         expires =
           login_data
@@ -26,7 +27,8 @@ defmodule Whatsapp.Auth.Manager do
 
         Map.put(login_data, "expires_after", expires)
 
-      _ ->
+      error ->
+        IO.inspect(error)
         Logger.error(fn -> "Whatsapp login failed for #{provider.name}" end)
         %{}
     end
@@ -37,7 +39,8 @@ defmodule Whatsapp.Auth.Manager do
   """
   @spec logout(WhatsappProvider.t(), binary()) :: :ok | :error
   def logout(%WhatsappProvider{} = provider, token) do
-    case Users.logout(provider.url, token) do
+    auth_header = {"Authorization", "Bearer #{token}"}
+    case Users.logout({provider.url, auth_header}) do
       {:ok, _} ->
         Logger.info(fn -> "Logout #{provider.name} successful" end)
         :ok
@@ -52,10 +55,11 @@ defmodule Whatsapp.Auth.Manager do
   end
 
   @doc """
-  Genera el token para autenticarse con el servicio de Whatsapp
+  Genera el header para autenticarse con el servicio de Whatsapp
   """
-  @spec generate_token(map) :: binary()
-  def generate_token(%{username: username, password: password}) do
-    Base.encode64("#{username}:#{password}")
+  @spec generate_login_auth_header(String.t(), String.t()) :: binary()
+  def generate_login_auth_header(username, password) do
+    token = Base.encode64("#{username}:#{password}")
+    {"Authorization", "Basic #{token}"}
   end
 end

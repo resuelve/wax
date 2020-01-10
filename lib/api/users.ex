@@ -10,26 +10,22 @@ defmodule Whatsapp.Api.Users do
   @doc """
   Login para generar token de autenticación
   """
-  @spec login(String.t(), binary()) :: map
-  def login(url, token) do
-    headers = [{"Authorization", "Basic #{token}"}]
-
+  @spec login(tuple()) :: map
+  def login({url, auth_header}) do
     url
     |> Kernel.<>("/users/login")
-    |> WhatsappApiRequest.post!(nil, headers)
+    |> WhatsappApiRequest.post!(nil, [auth_header])
     |> @parser.parse(:users_login)
   end
 
   @doc """
   Logout de la sesión del usuario
   """
-  @spec logout(String.t(), binary()) :: map
-  def logout(url, token) do
-    headers = [{"Authorization", "Bearer #{token}"}]
-
+  @spec logout(tuple()) :: map
+  def logout({url, auth_header}) do
     url
     |> Kernel.<>("/users/logout")
-    |> WhatsappApiRequest.post(nil, headers)
+    |> WhatsappApiRequest.post!(nil, [auth_header])
     |> @parser.parse(:users_logout)
   end
 end

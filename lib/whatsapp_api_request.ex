@@ -51,6 +51,7 @@ defmodule WhatsappApiRequest do
   end
 
   def process_response_body(body) do
+    IO.inspect(body)
     Jason.decode!(body)
   end
 end

@@ -11,6 +11,8 @@ defmodule WhatsappApi do
   alias Whatsapp.Api.Media
   alias Whatsapp.Api.Settings
   alias Whatsapp.Api.Health
+  alias Whatsapp.Api.Users
+  alias Whatsapp.Api.Account
   alias Whatsapp.Auth.Server, as: AuthServer
 
   @doc """
@@ -83,6 +85,12 @@ defmodule WhatsappApi do
     |> Settings.update_application(data)
   end
 
+  def two_step(pin, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Settings.two_step(pin)
+  end
+
   @doc """
   Check whatsapp health
   """
@@ -91,5 +99,23 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Health.get_summary()
+  end
+
+  def logout(provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Users.logout()
+  end
+
+  def create_account(data, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Account.create(data)
+  end
+
+  def verify_account(code, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Account.verify(code)
   end
 end
