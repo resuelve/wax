@@ -27,8 +27,7 @@ defmodule Whatsapp.Auth.Manager do
 
         Map.put(login_data, "expires_after", expires)
 
-      error ->
-        IO.inspect(error)
+      _ ->
         Logger.error(fn -> "Whatsapp login failed for #{provider.name}" end)
         %{}
     end
