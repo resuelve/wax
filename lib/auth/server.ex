@@ -86,9 +86,9 @@ defmodule Whatsapp.Auth.Server do
   tipo info para token check diario
   """
   @spec handle_info(:token_check, any()) :: {:noreply, any()}
-  def handle_info(:token_check, %{tokens: tokens, providers: providers} = state) do
+  def handle_info(:token_check, %{providers: providers} = state) do
     Logger.info("Checking tokens")
-    tokens = update_expired_tokens(providers, tokens)
+    tokens = update_expired_tokens(providers)
     schedule_token_check()
     {:noreply, Map.put(state, :tokens, tokens)}
   end
@@ -121,7 +121,7 @@ defmodule Whatsapp.Auth.Server do
     Process.send_after(self(), :token_check, @daily)
   end
 
-  def update_expired_tokens(providers, credentials) do
+  def update_expired_tokens(providers) do
     Enum.reduce(
       providers,
       %{},
