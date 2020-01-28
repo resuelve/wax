@@ -69,5 +69,5 @@ iex> Whatsapp.Api.Messages.send({"https://wa.io:9090/v1", auth_header, message)
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/whatsapp_api](https://hexdocs.pm/whatsapp_api).
+be found at [https://hexdocs.pm/wax](https://hexdocs.pm/wax).
 
