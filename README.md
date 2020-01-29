@@ -1,3 +1,5 @@
+![Elixir CI](https://github.com/resuelve/wax/workflows/Elixir%20CI/badge.svg)
+
 # Whatsapp Api
 
 Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.com/docs/whatsapp
