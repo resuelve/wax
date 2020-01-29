@@ -3,7 +3,6 @@ defmodule Whatsapp.Api.ContactsTest do
 
   import Mock
   alias Whatsapp.Api.Contacts
-  alias Whatsapp.Models.WhatsappProvider
 
   test "Should check contact", %{token_info: token_info} do
     with_mocks([
