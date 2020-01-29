@@ -2,21 +2,21 @@
 
 Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.com/docs/whatsapp
 
-[x] Login
-[x] Logout
-[x] Create account
-[x] Verify account
-[x] Check contact
-[x] Send text messages
-[x] Send hsm messages
-[x] Send media messages
-[x] Download media
-[x] Get application medatada
-[x] Update application metadata
-[x] Two step verification
-[x] Get health
-[ ] Stats
-[ ] Support
+- [x] Login
+- [x] Logout
+- [x] Create account
+- [x] Verify account
+- [x] Check contact
+- [x] Send text messages
+- [x] Send hsm messages
+- [x] Send media messages
+- [x] Download media
+- [x] Get application medatada
+- [x] Update application metadata
+- [x] Two step verification
+- [x] Get health
+- [ ] Stats
+- [ ] Support
 
 ## Installation
 
