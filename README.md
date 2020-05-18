@@ -28,7 +28,7 @@ by adding `whatsapp_api` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.1}
+    {:wax, "~> 0.4.2}
   ]
 end
 ```
