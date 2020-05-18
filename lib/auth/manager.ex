@@ -40,19 +40,7 @@ defmodule Whatsapp.Auth.Manager do
   @spec logout(WhatsappProvider.t(), binary()) :: :ok | :error
   def logout(%WhatsappProvider{} = provider, token) do
     auth_header = {"Authorization", "Bearer #{token}"}
-
-    case Users.logout({provider.url, auth_header}) do
-      {:ok, _} ->
-        Logger.info(fn -> "Logout #{provider.name} successful" end)
-        :ok
-
-      {:error, [error]} ->
-        Logger.error(fn ->
-          "Whatsapp logout failed for #{provider.name}: #{error["details"]}"
-        end)
-
-        :error
-    end
+    Users.logout({provider.url, auth_header})
   end
 
   @doc """
