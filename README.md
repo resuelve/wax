@@ -28,7 +28,7 @@ by adding `whatsapp_api` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.2}
+    {:wax, "~> 0.4.3}
   ]
 end
 ```
@@ -36,7 +36,11 @@ end
 Setup default parser in `config.ex`
 
 ```elixir
-config :whatsapp_api, parser: Whatsapp.Parser
+config :whatsapp_api,
+  parser: Whatsapp.Parser,
+  timeout: 50_000,
+  connect_timeout: 50_000,
+  recv_timeout: :infinity
 ```
 
 ## Using GenServer Auth
