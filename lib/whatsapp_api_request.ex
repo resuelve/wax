@@ -10,9 +10,9 @@ defmodule WhatsappApiRequest do
   def process_request_options(options) do
     [
       hackney: [:insecure],
-      connect_timeout: 10_000,
-      recv_timeout: 10_000,
-      timeout: 10_000
+      connect_timeout: Application.get_env(:wax, :connect_timeout) || 10_000,
+      recv_timeout: Application.get_env(:wax, :recv_timeout) || 10_000,
+      timeout: Application.get_env(:wax, :timeout) || 10_000
     ] ++ options
   end
 
