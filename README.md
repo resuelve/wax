@@ -13,6 +13,7 @@ Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.c
 - [x] Send hsm messages
 - [x] Send media messages
 - [x] Download media
+- [x] Delete media
 - [x] Get application medatada
 - [x] Update application metadata
 - [x] Two step verification
@@ -28,7 +29,7 @@ by adding `whatsapp_api` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.3}
+    {:wax, "~> 0.4.4}
   ]
 end
 ```
