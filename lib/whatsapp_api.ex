@@ -39,6 +39,13 @@ defmodule WhatsappApi do
     |> Messages.send_media(message)
   end
 
+  @spec delete_media(String.t(), String.t()) :: tuple()
+  def delete_media(media_id, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Media.delete(media_id)
+  end
+
   @doc """
   Check if phone number is valid an gets wa_id
   """
