@@ -22,4 +22,24 @@ defmodule Whatsapp.Api.MediaTest do
       assert Media.download(token_info, media_id) == "binary-data"
     end
   end
+
+  test "Deletes a media file", %{token_info: token_info} do
+    with_mocks([
+      {
+        WhatsappApiRequestMedia,
+        [],
+        [
+          rate_limit_request: fn _, _, _ ->
+            %HTTPoison.Response{
+              status_code: 200,
+              body: "{}"
+            }
+          end
+        ]
+      }
+    ]) do
+      media_id = 1
+      assert Media.delete(token_info, media_id) == {:ok, "{}"}
+    end
+  end
 end

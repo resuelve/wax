@@ -13,6 +13,10 @@ defmodule Whatsapp.Parser do
     {:ok, media_id}
   end
 
+  defp _parse(:media_delete, %Response{status_code: 200, body: body}) do
+    {:ok, body}
+  end
+
   defp _parse(_type, %Response{body: body}) do
     body
   end

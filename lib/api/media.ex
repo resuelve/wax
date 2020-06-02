@@ -33,4 +33,15 @@ defmodule Whatsapp.Api.Media do
     |> WhatsappApiRequestMedia.rate_limit_request(:get!, [auth_header])
     |> @parser.parse(:media_download)
   end
+
+  @doc """
+  Elimina un archivo media en el servidor de Whatsapp
+  """
+  @spec delete(tuple(), integer | String.t()) :: tuple
+  def delete({url, auth_header}, media_id) do
+    url
+    |> Kernel.<>("/media/#{media_id}")
+    |> WhatsappApiRequestMedia.rate_limit_request(:delete!, [auth_header])
+    |> @parser.parse(:media_delete)
+  end
 end
