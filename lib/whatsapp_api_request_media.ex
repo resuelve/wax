@@ -16,7 +16,7 @@ defmodule WhatsappApiRequestMedia do
     ] ++ options
   end
 
-  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!] do
+  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!, :delete!] do
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
 
     case ExRated.check_rate(host, @scale, @limit) do
