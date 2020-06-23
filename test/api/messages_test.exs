@@ -3,9 +3,13 @@ defmodule Whatsapp.Api.MessagesTest do
 
   import Mock
   alias Whatsapp.Api.Messages
-  alias Whatsapp.Models.MessageOutbound
-  alias Whatsapp.Models.MessageOutboundHsm
-  alias Whatsapp.Models.MessageOutboundMedia
+
+  alias Whatsapp.Models.{
+    MessageOutbound,
+    MessageOutboundHsm,
+    MessageOutboundMedia,
+    MessageOutboundMediaHsm
+  }
 
   @response %{
     "messages" => [
@@ -91,6 +95,76 @@ defmodule Whatsapp.Api.MessagesTest do
         )
 
       assert Messages.send_media(token_info, message) == @response
+    end
+  end
+
+  test "Sending HSM with media message", %{token_info: token_info} do
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          rate_limit_request: fn _, _, _, _ -> @http_success_response end
+        ]
+      },
+      {
+        WhatsappApiRequestMedia,
+        [],
+        [
+          rate_limit_request: fn _, :post!, _, _ ->
+            %HTTPoison.Response{body: %{"media" => [%{"id" => 1}]}}
+          end
+        ]
+      }
+    ]) do
+      message =
+        MessageOutboundMediaHsm.new(
+          to: "15162837151",
+          namespace: "resuelve:fintech",
+          element_name: "welcome",
+          language_code: "es",
+          file_name: "mi_archivo.pdf",
+          data: "data:text/plain;base64,SGVsbG8gd29ybGQh",
+          type: "document",
+          params: [%{"text" => "replacement_text"}]
+        )
+
+      assert Messages.send_media_hsm(token_info, message) == @response
+    end
+  end
+
+  test "Gives an error when using it with empty parameters", %{token_info: token_info} do
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          rate_limit_request: fn _, _, _, _ -> @http_success_response end
+        ]
+      },
+      {
+        WhatsappApiRequestMedia,
+        [],
+        [
+          rate_limit_request: fn _, :post!, _, _ ->
+            %HTTPoison.Response{body: %{"media" => [%{"id" => 1}]}}
+          end
+        ]
+      }
+    ]) do
+      message =
+        MessageOutboundMediaHsm.new(
+          to: "15162837151",
+          namespace: "resuelve:fintech",
+          element_name: "welcome",
+          language_code: "es",
+          file_name: "mi_archivo.pdf",
+          data: "data:text/plain;base64,SGVsbG8gd29ybGQh",
+          type: "document",
+          params: []
+        )
+
+      assert Messages.send_media_hsm(token_info, message) == {:error, "Empty parameters"}
     end
   end
 end

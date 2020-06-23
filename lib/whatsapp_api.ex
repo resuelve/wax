@@ -4,9 +4,14 @@ defmodule WhatsappApi do
   """
 
   alias Whatsapp.Api.Messages
-  alias Whatsapp.Models.MessageOutbound
-  alias Whatsapp.Models.MessageOutboundHsm
-  alias Whatsapp.Models.MessageOutboundMedia
+
+  alias Whatsapp.Models.{
+    MessageOutbound,
+    MessageOutboundHsm,
+    MessageOutboundMedia,
+    MessageOutboundMediaHsm
+  }
+
   alias Whatsapp.Api.Contacts
   alias Whatsapp.Api.Media
   alias Whatsapp.Api.Settings
@@ -37,6 +42,13 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Messages.send_media(message)
+  end
+
+  @spec send_media_hsm(MessageOutboundMediaHsm.t(), String.t()) :: map()
+  def send_media_hsm(%MessageOutboundMediaHsm{} = message, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send_media_hsm(message)
   end
 
   @spec delete_media(String.t(), String.t()) :: tuple()
