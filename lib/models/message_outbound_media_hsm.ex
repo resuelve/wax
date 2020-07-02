@@ -90,7 +90,8 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
     %{
       type: "document",
       document: %{
-        id: media_id
+        id: media_id,
+        filename: "talondepago.pdf"
       }
     }
   end
