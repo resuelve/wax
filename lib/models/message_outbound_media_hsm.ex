@@ -78,6 +78,10 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
     |> _convert_to_parameter()
   end
 
+  def _convert_to_parameter(text) when is_binary(text) do
+    %{type: "text", text: text}
+  end
+
   def _convert_to_parameter(%{"text" => replacement_text}) do
     %{type: "text", text: replacement_text}
   end

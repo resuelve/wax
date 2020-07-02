@@ -58,6 +58,12 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmTest do
       assert formatted == [@text_parameter]
     end
 
+    test "Formats a simple text parameter" do
+      parameter = ["replacement_text"]
+      formatted = MessageOutboundMediaHsm._format_params(parameter)
+      assert formatted == [@text_parameter]
+    end
+
     test "Formats a document parameter" do
       parameter = [%{"document" => "media_id"}]
       formatted = MessageOutboundMediaHsm._format_params(parameter)
