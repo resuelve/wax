@@ -42,7 +42,7 @@ defmodule Whatsapp.Api.Messages do
   end
 
   def send_media_hsm({url, auth_header} = token_info, %MessageOutboundMediaHsm{} = message) do
-    with {:ok, message_validated} <- MessageOutboundMediaHsm.validate(message),
+    with :ok <- MessageOutboundMediaHsm.validate(message),
          {:ok, media_id} <- MediaApi.upload(token_info, message) do
       params =
         message

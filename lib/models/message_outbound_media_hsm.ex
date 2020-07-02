@@ -64,7 +64,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
   def validate(message) do
     with {:ok, message} <- _validate_policy(message),
          :ok <- _not_empty_parameters(message) do
-      {:ok, message}
+      :ok
     end
   end
 
