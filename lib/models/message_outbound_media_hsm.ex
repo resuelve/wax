@@ -78,9 +78,10 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
     Enum.map(params, &_convert_to_parameter/1)
   end
 
-  def _convert_to_parameter(type, value) do
+  def _convert_to_parameter(type, value, caption) do
     Map.new()
     |> Map.put(type, value)
+    |> Map.put("caption", caption)
     |> _convert_to_parameter()
   end
 
@@ -92,20 +93,22 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
     %{type: "text", text: replacement_text}
   end
 
-  def _convert_to_parameter(%{"document" => media_id}) do
+  def _convert_to_parameter(%{"document" => media_id, "caption" => caption}) do
     %{
       type: "document",
       document: %{
-        id: media_id
+        id: media_id,
+        filename: caption
       }
     }
   end
 
-  def _convert_to_parameter(%{"video" => media_id}) do
+  def _convert_to_parameter(%{"video" => media_id, "caption" => caption}) do
     %{
       type: "video",
       video: %{
-        id: media_id
+        id: media_id,
+        caption: caption
       }
     }
   end
@@ -133,7 +136,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
         components: [
           %{
             type: "header",
-            parameters: [_convert_to_parameter(message.type, message.media_id)]
+            parameters: [_convert_to_parameter(message.type, message.media_id, message.caption)]
           },
           %{
             type: "body",

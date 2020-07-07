@@ -6,7 +6,8 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmTest do
   @document_parameter %{
     type: "document",
     document: %{
-      id: "media_id"
+      id: "media_id",
+      filename: "mi_archivo.pdf"
     }
   }
 
@@ -14,7 +15,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmTest do
 
   @text_parameter %{type: "text", text: "replacement_text"}
 
-  @video_parameter %{type: "video", video: %{id: "media_id"}}
+  @video_parameter %{type: "video", video: %{id: "media_id", caption: "mi_video.mp4"}}
 
   test "Creates a payload" do
     args = [
@@ -65,13 +66,13 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmTest do
     end
 
     test "Formats a document parameter" do
-      parameter = [%{"document" => "media_id"}]
+      parameter = [%{"document" => "media_id", "caption" => "mi_archivo.pdf"}]
       formatted = MessageOutboundMediaHsm._format_params(parameter)
       assert formatted == [@document_parameter]
     end
 
     test "Formats a video parameter" do
-      parameter = [%{"video" => "media_id"}]
+      parameter = [%{"video" => "media_id", "caption" => "mi_video.mp4"}]
       formatted = MessageOutboundMediaHsm._format_params(parameter)
       assert formatted == [@video_parameter]
     end
@@ -83,7 +84,11 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmTest do
     end
 
     test "Formats multiple parameters" do
-      parameter = [%{"document" => "media_id"}, %{"video" => "media_id"}]
+      parameter = [
+        %{"document" => "media_id", "caption" => "mi_archivo.pdf"},
+        %{"video" => "media_id", "caption" => "mi_video.mp4"}
+      ]
+
       formatted = MessageOutboundMediaHsm._format_params(parameter)
       assert formatted == [@document_parameter, @video_parameter]
     end
