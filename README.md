@@ -24,12 +24,12 @@ Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.c
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `whatsapp_api` to your list of dependencies in `mix.exs`:
+by adding `wax` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.5}
+    {:wax, "~> 0.4.6}
   ]
 end
 ```

@@ -5,7 +5,7 @@ defmodule Whatsapp.Api.Media do
 
   @parser Application.get_env(:wax, :parser)
 
-  alias Whatsapp.Models.MessageOutboundMedia
+  alias Whatsapp.Models.{MessageOutboundMedia, MessageOutboundMediaHsm}
   alias WhatsappApiRequestMedia
 
   require Logger
@@ -13,8 +13,14 @@ defmodule Whatsapp.Api.Media do
   @doc """
   Carga el archivo al servidor de Whatsapp
   """
-  @spec upload(tuple(), Media.t()) :: tuple
-  def upload({url, auth_header}, %MessageOutboundMedia{data: data, mime_type: mime_type}) do
+  @spec upload(tuple(), MessageOutboundMediaHsm.t() | MessageOutboundMedia.t()) :: tuple
+  def upload(token, %MessageOutboundMediaHsm{data: data, mime_type: mime_type}),
+    do: upload(token, data, mime_type)
+
+  def upload(token, %MessageOutboundMedia{data: data, mime_type: mime_type}),
+    do: upload(token, data, mime_type)
+
+  def upload({url, auth_header}, data, mime_type) do
     headers = [{"Content-Type", mime_type}, auth_header]
 
     url
