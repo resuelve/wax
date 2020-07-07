@@ -28,7 +28,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsm do
 
   @default_values %{
     language_policy: "deterministic",
-    params: []
+    caption: nil
   }
 
   @type t :: %__MODULE__{}
