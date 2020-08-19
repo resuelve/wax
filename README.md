@@ -90,6 +90,12 @@ iex> auth_header = [{"Authorization", "Bearer #{token}"}]
 iex> Whatsapp.Api.Messages.send({"https://wa.io:9090/v1", auth_header, message)
 ```
 
+## Development iex Console
+
+```
+iex> Whatsapp.Auth.Server.start_link([%{name: "company", username: "username", password: "password", url: "https://wa.company.io"}])
+```
+
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/wax](https://hexdocs.pm/wax).
