@@ -28,7 +28,7 @@ defmodule WhatsappApi.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.21.0", only: :dev},
-      {:httpoison, "~> 1.6.2"},
+      {:httpoison, "~> 1.7.0"},
       {:mock, "~> 0.3.3", only: :test},
       {:timex, "~> 3.3"},
       {:jason, "~> 1.2.1"},
