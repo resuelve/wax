@@ -12,8 +12,9 @@ defmodule Whatsapp.Api.Settings do
   def get_application({url, auth_header}) do
     url
     |> Kernel.<>("/settings/application")
-    |> WhatsappApiRequest.rate_limit_request(:get!, nil, [auth_header])
-    |> @parser.parse(:settings_get_application)
+    |> HTTPoison.get!([auth_header], hackney: [:insecure])
+    |> Map.get(:body)
+    |> Jason.decode!()
   end
 
   @doc """
