@@ -126,6 +126,12 @@ defmodule WhatsappApi do
     |> Users.logout()
   end
 
+  def create_user(provider, data) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Users.create(data)
+  end
+
   def create_account(data, provider) do
     provider
     |> AuthServer.get_token_info()
