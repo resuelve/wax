@@ -6,6 +6,7 @@ Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.c
 
 - [x] Login
 - [x] Logout
+- [x] Create User
 - [x] Create account
 - [x] Verify account
 - [x] Check contact
@@ -29,7 +30,7 @@ by adding `wax` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.7}
+    {:wax, "~> 0.4.8"}
   ]
 end
 ```
@@ -93,7 +94,7 @@ iex> Whatsapp.Api.Messages.send({"https://wa.io:9090/v1", auth_header, message)
 ## Development iex Console
 
 ```
-iex> Whatsapp.Auth.Server.start_link([%{name: "company", username: "username", password: "password", url: "https://wa.company.io"}])
+iex> Whatsapp.Auth.Server.start_link([%{name: "company", username: "username", password: "password", url: "https://wa.company.io:9090/v1"}])
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)

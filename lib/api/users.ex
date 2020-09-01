@@ -8,7 +8,7 @@ defmodule Whatsapp.Api.Users do
   alias WhatsappApiRequest
 
   @doc """
-  Login para generar token de autenticación
+  Login for any kind of user
   """
   @spec login(tuple()) :: map
   def login({url, auth_header}) do
@@ -19,7 +19,7 @@ defmodule Whatsapp.Api.Users do
   end
 
   @doc """
-  Logout de la sesión del usuario
+  Logout from some account
   """
   @spec logout(tuple()) :: map
   def logout({url, auth_header}) do
@@ -27,5 +27,16 @@ defmodule Whatsapp.Api.Users do
     |> Kernel.<>("/users/logout")
     |> WhatsappApiRequest.post!(nil, [auth_header])
     |> @parser.parse(:users_logout)
+  end
+
+  @doc """
+  Create user account
+  """
+  @spec create(tuple(), map) :: map
+  def create({url, auth_header}, data) do
+    url
+    |> Kernel.<>("/users")
+    |> WhatsappApiRequest.post!(data, [auth_header])
+    |> @parser.parse(:users_create)
   end
 end
