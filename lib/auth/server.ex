@@ -128,9 +128,7 @@ defmodule Whatsapp.Auth.Server do
   defp update_providers(providers, new_providers) do
     providers
     |> Enum.filter(fn %{name: provider_name} ->
-      new_providers
-      |> Enum.find(fn %{name: new_provider_name} -> new_provider_name == provider_name end)
-      |> case do
+      case Enum.find(new_providers, &(&1.name == provider_name)) do
         nil ->
           true
 
@@ -144,9 +142,7 @@ defmodule Whatsapp.Auth.Server do
   # Actualiza los tokens sólo de los providers que se recibieron
   @spec update_tokens(map(), map()) :: map()
   defp update_tokens(tokens, new_tokens) do
-    Enum.reduce(new_tokens, tokens, fn {key, new_token}, updated_tokens ->
-      Map.put(updated_tokens, key, new_token)
-    end)
+    Map.merge(tokens, new_tokens)
   end
 
   defp get_auth_header(token) do
