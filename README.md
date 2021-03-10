@@ -30,7 +30,7 @@ by adding `wax` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:wax, "~> 0.4.8"}
+    {:wax, "~> 0.5.0"}
   ]
 end
 ```
