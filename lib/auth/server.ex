@@ -18,11 +18,11 @@ defmodule Whatsapp.Auth.Server do
   Carga la configuración de los providers dados y los autentica
   """
   @spec load_config(map() | [map()]) :: :ok
-  def load_config(wa_server_config) when is_map(wa_server_config) do
-    load_config([wa_server_config])
+  def load_config(config) when is_map(config) do
+    load_config([config])
   end
 
-  def load_config(config) when is_list(config) do
+  def load_config([_ | _] = config) do
     GenServer.cast(@server, {:load_providers_config, config})
   end
 
@@ -175,11 +175,12 @@ defmodule Whatsapp.Auth.Server do
           |> Manager.login()
           |> Map.put("url", provider.url)
 
-          Map.put(credentials, provider.name, credentials_provider)
-
-        rescue
-          error ->
-            Map.put(credentials, provider.name, %{error: inspect(error)})
+        Map.put(credentials, provider.name, credentials_provider)
+      rescue
+        error ->
+          previous_errors = Map.get(credentials, :errors, [])
+          errors = [%{provider.name => inspect(error)} | previous_errors]
+          Map.put(credentials, :errors, errors)
       end
     end)
   end
