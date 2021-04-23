@@ -179,7 +179,7 @@ defmodule Whatsapp.Auth.Server do
       rescue
         error ->
           previous_errors = Map.get(credentials, :errors, [])
-          errors = [%{provider.name => inspect(error)} | previous_errors]
+          errors = [{provider.name, inspect(error)} | previous_errors]
           Map.put(credentials, :errors, errors)
       end
     end)

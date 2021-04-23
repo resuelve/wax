@@ -99,4 +99,45 @@ defmodule Whatsapp.Auth.ServerTest do
       assert auth_header == {"Authorization", "Bearer dXNlcm5hbWU6cGFzc3dvcmQ="}
     end
   end
+
+  test "Should catch login errors if the Auth server has problems logging in a Whatsapp Server" do
+    error = %HTTPoison.Error{id: nil, reason: :nxdomain}
+
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          post!: fn _, _, _ ->
+            raise error
+          end
+        ]
+      }
+    ]) do
+      providers = [
+        %{
+          name: "rtd-mx-test",
+          username: "username",
+          password: "password",
+          url: "https://wa.resuelve.test/v1"
+        },
+        %{
+          name: "rtd-es-test",
+          username: "user_es",
+          password: "pwd_ws",
+          url: "https://wa.es.resuelve.test:9090/v1"
+        }
+      ]
+
+      {:ok, _pid} = Server.start_link()
+      :ok = Server.load_config(providers)
+
+      %{tokens: tokens} = Server.list_tokens() |> IO.inspect()
+
+      assert tokens.errors == [
+               {"rtd-es-test", inspect(error)},
+               {"rtd-mx-test", inspect(error)}
+             ]
+    end
+  end
 end
