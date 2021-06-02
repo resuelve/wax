@@ -169,12 +169,19 @@ defmodule Whatsapp.Auth.Server do
 
   def get_tokens_info(providers) do
     Enum.reduce(providers, %{}, fn provider, credentials ->
-      credentials_provider =
-        provider
-        |> Manager.login()
-        |> Map.put("url", provider.url)
+      try do
+        credentials_provider =
+          provider
+          |> Manager.login()
+          |> Map.put("url", provider.url)
 
-      Map.put(credentials, provider.name, credentials_provider)
+        Map.put(credentials, provider.name, credentials_provider)
+      rescue
+        error ->
+          previous_errors = Map.get(credentials, :errors, [])
+          errors = [{provider.name, inspect(error)} | previous_errors]
+          Map.put(credentials, :errors, errors)
+      end
     end)
   end
 
