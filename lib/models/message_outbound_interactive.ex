@@ -10,7 +10,7 @@ defmodule Whatsapp.Models.MessageOutboundInteractive do
   defstruct(
     recipient: "individual",
     to: nil,
-    type: nil,
+    type: "interactive",
     interactive: nil
   )
 
