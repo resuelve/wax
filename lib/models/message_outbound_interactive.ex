@@ -21,10 +21,7 @@ defmodule Whatsapp.Models.MessageOutboundInteractive do
   """
   @spec new(Keyword.t()) :: __MODULE__.t()
   def new(options) do
-    attrs =
-      options
-      |> Enum.into(Map.new())
-
+    attrs = Enum.into(options, Map.new())
     Kernel.struct(__MODULE__, attrs)
   end
 
