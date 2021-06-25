@@ -1,5 +1,7 @@
 ![Elixir CI](https://github.com/resuelve/wax/workflows/Elixir%20CI/badge.svg)
 
+[![Build Status](https://c.resuelve.io/api/badges/resuelve/wax/status.svg)](https://c.resuelve.io/resuelve/wax)
+
 # Whatsapp Api
 
 Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.com/docs/whatsapp
