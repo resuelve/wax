@@ -39,7 +39,7 @@ defmodule WhatsappApi.MixProject do
   defp package do
     [
       files: ["lib", "mix.exs", "README.md"],
-      maintainers: ["Oscar Olivera", "Alfonso Martinez"],
+      maintainers: ["John Lopez", "Alfonso Martinez"],
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/resuelve/whatsapp-api"}
     ]
