@@ -1,4 +1,4 @@
-defmodule Whatsapp.Models.MessageOutboundMediaHsmId do
+defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
   @moduledoc """
   Model in charge of sending templates with media:
   https://developers.facebook.com/docs/whatsapp/api/messages/message-templates/media-message-templates
@@ -26,7 +26,16 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmId do
     params: []
   }
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          to: String.t(),
+          namespace: String.t(),
+          element_name: String.t(),
+          language_policy: String.t(),
+          language_code: String.t(),
+          params: list(),
+          type: String.t(),
+          media_id: String.t()
+        }
 
   @doc """
   Crea un mensaje nuevo
@@ -38,15 +47,15 @@ defmodule Whatsapp.Models.MessageOutboundMediaHsmId do
   end
 
   # Valida que el tipo de selección de lenguaje sea válido
-  @spec _validate_policy(MessageOutboundMediaHsmId.t()) :: String.t()
-  defp _validate_policy(%MessageOutboundMediaHsmId{language_policy: language_policy} = msg)
+  @spec _validate_policy(MessageOutboundMediaIdHsm.t()) :: String.t()
+  defp _validate_policy(%MessageOutboundMediaIdHsm{language_policy: language_policy} = msg)
        when language_policy in @valid_language_policies do
     {:ok, msg}
   end
 
   defp _validate_policy(_message), do: {:error, "Invalid language policy"}
 
-  defp _not_empty_parameters(%MessageOutboundMediaHsmId{params: params}) when length(params) > 0,
+  defp _not_empty_parameters(%MessageOutboundMediaIdHsm{params: params}) when length(params) > 0,
     do: :ok
 
   defp _not_empty_parameters(_), do: {:error, "Empty parameters"}
