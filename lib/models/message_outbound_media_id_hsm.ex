@@ -55,7 +55,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
 
   defp _validate_policy(_message), do: {:error, "Invalid language policy"}
 
-  defp _not_empty_parameters(%MessageOutboundMediaIdHsm{params: params}) when length(params) > 0,
+  defp _not_empty_parameters(%MessageOutboundMediaIdHsm{params: params}),
     do: :ok
 
   defp _not_empty_parameters(_), do: {:error, "Empty parameters"}
