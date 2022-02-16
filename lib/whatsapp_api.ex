@@ -11,7 +11,8 @@ defmodule WhatsappApi do
     MessageOutboundMedia,
     MessageOutboundMediaHsm,
     MessageOutboundInteractive,
-    MessageOutboundMediaIdHsm
+    MessageOutboundMediaIdHsm,
+    MessageOutboundTemplate
   }
 
   alias Whatsapp.Api.Contacts
