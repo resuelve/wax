@@ -37,7 +37,7 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
 
   # Valida que el tipo de selección de lenguaje sea válido
   @spec _validate_policy(MessageOutboundTemplate.t()) :: String.t()
-  defp _validate_policy(%MessageOutboundTempalte{language_policy: language_policy} = msg)
+  defp _validate_policy(%MessageOutboundTemplate{language_policy: language_policy} = msg)
        when language_policy in @valid_language_policies do
     {:ok, msg}
   end
