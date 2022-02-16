@@ -13,7 +13,8 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
     namespace: nil,
     name: nil,
     language_policy: nil,
-    language_code: nil
+    language_code: nil,
+    template: nil
   )
 
   @valid_language_policies ["deterministic"]
