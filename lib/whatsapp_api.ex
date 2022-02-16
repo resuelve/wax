@@ -67,6 +67,13 @@ defmodule WhatsappApi do
     |> Messages.send_message_interactive(message)
   end
 
+  @spec send_template(MessageOutboundTemplate.t(), String.t()) :: map()
+  def send_template(%MessageOutboundTemplate{} = message, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send_template(message)
+  end
+
   @spec delete_media(String.t(), String.t()) :: tuple()
   def delete_media(media_id, provider) do
     provider
