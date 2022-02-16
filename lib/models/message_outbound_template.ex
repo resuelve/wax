@@ -6,7 +6,7 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
   require Logger
   alias __MODULE__
 
-  @enforce_keys [:to, :language_policy, :params]
+  @enforce_keys [:to, :language_policy]
 
   defstruct(
     to: nil,
@@ -19,8 +19,7 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
   @valid_language_policies ["deterministic"]
 
   @default_values %{
-    language_policy: "deterministic",
-    params: []
+    language_policy: "deterministic"
   }
 
   @type t :: %__MODULE__{}
@@ -50,15 +49,8 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
     end
   end
 
-  # Formatea la lista de parametros como parametros default para el HSM
-  @spec format_params([String.t()]) :: [map]
-  defp format_params(params) do
-    Enum.map(params, fn param -> %{default: param} end)
-  end
-
   def to_json(%__MODULE__{} = message) do
     %{
-      recipient_type: "individual",
       to: message.to,
       type: "template",
       template: message.template
