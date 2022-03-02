@@ -14,7 +14,7 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
     name: nil,
     language_policy: nil,
     language_code: nil,
-    template: nil
+    parameters: nil
   )
 
   @valid_language_policies ["deterministic"]
@@ -52,9 +52,27 @@ defmodule Whatsapp.Models.MessageOutboundTemplate do
 
   def to_json(%__MODULE__{} = message) do
     %{
+      recipient_type: "individual",
       to: message.to,
       type: "template",
-      template: message.template
+      template: %{
+        components: [
+           %{
+              parameters: [
+                %{
+                  text: message.parameters,
+                  type: "text"
+                }
+              ],
+              type: "body"
+            }],
+        language: %{
+          code: message.language_code,
+          policy: message.language_policy
+        },
+        name: message.name,
+        namespace: message.namespace
+      }
     }
   end
 end
