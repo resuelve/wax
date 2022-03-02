@@ -47,8 +47,6 @@ defmodule Whatsapp.Api.Messages do
   def send_template({url, auth_header}, %MessageOutboundTemplate{} = message) do
     with {:ok, message_validated} <- MessageOutboundTemplate.validate(message) do
       headers = [auth_header]
-      IO.inspect("WAX SEND TEMPLATE MESSAGE")
-      IO.inspect(message)
       message = MessageOutboundTemplate.to_json(message_validated)
 
       url
