@@ -17,7 +17,7 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
     params: nil
   )
 
-  @valid_language_policies ["deterministic", "fallback"]
+  @valid_language_policies ["deterministic"]
 
   @default_values %{
     language_policy: "deterministic",
@@ -54,22 +54,31 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
   # Formatea la lista de parametros como parametros default para el HSM
   @spec format_params([String.t()]) :: [map]
   defp format_params(params) do
-    Enum.map(params, fn param -> %{default: param} end)
+    List.first(params)
   end
 
   def to_json(%__MODULE__{} = message) do
     %{
       recipient_type: "individual",
       to: message.to,
-      type: "hsm",
-      hsm: %{
-        namespace: message.namespace,
-        element_name: message.element_name,
+      type: "template",
+      template: %{
+        components: [
+           %{
+              parameters: [
+                %{
+                  text: format_params(message.params),
+                  type: "text"
+                }
+              ],
+              type: "body"
+            }],
         language: %{
-          policy: message.language_policy,
-          code: message.language_code
+          code: message.language_code,
+          policy: message.language_policy
         },
-        localizable_params: format_params(message.params)
+        name: message.element_name,
+        namespace: message.namespace
       }
     }
   end

@@ -19,7 +19,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     media_id: nil
   )
 
-  @valid_language_policies ["deterministic", "fallback"]
+  @valid_language_policies ["deterministic"]
 
   @default_values %{
     language_policy: "deterministic",
