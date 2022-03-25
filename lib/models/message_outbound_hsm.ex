@@ -54,7 +54,11 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
   # Formatea la lista de parametros como parametros default para el HSM
   @spec format_params([String.t()]) :: [map]
   defp format_params(params) do
-    List.first(params)
+    Enum.map(params, fn param -> %{
+        text: param,
+        type: "text"
+      }
+    end)
   end
 
   def to_json(%__MODULE__{} = message) do
@@ -65,12 +69,7 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
       template: %{
         components: [
            %{
-              parameters: [
-                %{
-                  text: format_params(message.params),
-                  type: "text"
-                }
-              ],
+              parameters: format_params(message.params),
               type: "body"
             }],
         language: %{
