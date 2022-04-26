@@ -16,7 +16,8 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     language_code: nil,
     params: nil,
     type: nil,
-    media_id: nil
+    media_id: nil,
+    file_name: nil
   )
 
   @valid_language_policies ["deterministic"]
@@ -34,7 +35,8 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
           language_code: String.t(),
           params: list(),
           type: String.t(),
-          media_id: String.t()
+          media_id: String.t(),
+          file_name: String.t()
         }
 
   @doc """
@@ -71,9 +73,10 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     Enum.map(params, &_convert_to_parameter/1)
   end
 
-  def _convert_to_parameter(type, value) do
+  def _convert_to_parameter(type, value, file_name) do
     Map.new()
     |> Map.put(type, value)
+    |> Map.put("file_name", file_name)
     |> _convert_to_parameter()
   end
 
@@ -85,14 +88,16 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     %{type: "text", text: replacement_text}
   end
 
-  def _convert_to_parameter(%{"document" => media_id}) do
+  def _convert_to_parameter(%{"document" => media_id, "file_name" => file_name}) do
     %{
       type: "document",
       document: %{
-        id: media_id
+        id: media_id,
+        filename: file_name
       }
     }
   end
+
 
   def _convert_to_parameter(%{"video" => media_id}) do
     %{
@@ -126,7 +131,7 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
         components: [
           %{
             type: "header",
-            parameters: [_convert_to_parameter(message.type, message.media_id)]
+            parameters: [_convert_to_parameter(message.type, message.media_id, message.file_name)]
           },
           %{
             type: "body",
