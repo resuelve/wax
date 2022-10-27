@@ -11,7 +11,8 @@ defmodule WhatsappApi do
     MessageOutboundMedia,
     MessageOutboundMediaHsm,
     MessageOutboundInteractive,
-    MessageOutboundMediaIdHsm
+    MessageOutboundMediaIdHsm,
+    MessageOutboundMediaGeneral
   }
 
   alias Whatsapp.Api.Contacts
@@ -65,6 +66,13 @@ defmodule WhatsappApi do
     provider
     |> AuthServer.get_token_info()
     |> Messages.send_message_interactive(message)
+  end
+
+  @spec send_message_media_general(MessageOutboundMediaGeneral.t(), String.t()) :: map()
+  def send_message_media_general(%MessageOutboundMediaGeneral{} = message, provider) do
+    provider
+    |> AuthServer.get_token_info()
+    |> Messages.send_media(message)
   end
 
   @spec delete_media(String.t(), String.t()) :: tuple()
