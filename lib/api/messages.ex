@@ -11,7 +11,8 @@ defmodule Whatsapp.Api.Messages do
     MessageOutboundMedia,
     MessageOutboundMediaHsm,
     MessageOutboundInteractive,
-    MessageOutboundMediaIdHsm
+    MessageOutboundMediaIdHsm,
+    MessageOutboundMediaGeneral
   }
 
   alias WhatsappApiRequest
@@ -61,6 +62,17 @@ defmodule Whatsapp.Api.Messages do
   def send_media_hsm({url, auth_header}, %MessageOutboundMediaIdHsm{} = message) do
     with {:ok, message_validated} <- MessageOutboundMediaIdHsm.validate(message) do
       message = MessageOutboundMediaIdHsm.to_json(message_validated)
+
+      url
+      |> Kernel.<>("/messages")
+      |> WhatsappApiRequest.rate_limit_request(:post!, message, [auth_header])
+      |> @parser.parse(:messages_send)
+    end
+  end
+
+  def send_media({url, auth_header}, %MessageOutboundMediaGeneral{} = message) do
+    with {:ok, message_validated} <- MessageOutboundMediaGeneral.validate(message) do
+      message = MessageOutboundMediaGeneral.to_json(message_validated)
 
       url
       |> Kernel.<>("/messages")

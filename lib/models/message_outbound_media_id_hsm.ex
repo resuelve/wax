@@ -98,7 +98,6 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     }
   end
 
-
   def _convert_to_parameter(%{"video" => media_id}) do
     %{
       type: "video",
