@@ -26,11 +26,14 @@ defmodule Whatsapp.Auth.Manager do
           "Whatsapp token received for [#{provider.name}] expires on #{expires}"
         end)
 
-        Map.put(login_data, "expires_after", expires)
-
+        new_token_data =
+        login_data
+          |> Map.put("expires_after", expires)
+          |> Map.put("url", provider.url)
+        {:ok, new_token_data}
       _ ->
         Logger.error(fn -> "Whatsapp login failed for #{provider.name}" end)
-        %{}
+        {:error, "Error fetching credentials"}
     end
   end
 

@@ -4,7 +4,8 @@ defmodule Whatsapp.Auth.Server do
   """
 
   # Every 24 hours
-  @daily 24 * 60 * 60 * 1_000
+  # @daily 24 * 60 * 60 * 1_000
+  @daily 60 * 1_000
   @server __MODULE__
 
   require Logger
@@ -57,7 +58,6 @@ defmodule Whatsapp.Auth.Server do
   def init(providers) do
     Process.flag(:trap_exit, true)
     Logger.info("Whatsapp Auth System online")
-
     schedule_token_check()
 
     {:ok, do_load_config(providers)}
@@ -81,11 +81,11 @@ defmodule Whatsapp.Auth.Server do
   end
 
   @impl true
-  def handle_info(:token_check, %{providers: providers} = state) do
+  def handle_info(:token_check, %{providers: providers, tokens: tokens} = state) do
     Logger.info("Checking tokens")
-    tokens = update_expired_tokens(providers)
+    updated_tokens = update_expired_tokens(providers, tokens)
     schedule_token_check()
-    {:noreply, Map.put(state, :tokens, tokens)}
+    {:noreply, Map.put(state, :tokens, updated_tokens)}
   end
 
   @impl true
@@ -95,8 +95,12 @@ defmodule Whatsapp.Auth.Server do
 
   @impl true
   def handle_call({:lookup_token, product}, _from, state) do
-    %{"token" => token, "url" => url} = Map.get(state.tokens, product)
-    {:reply, {url, get_auth_header(token)}, state}
+    case Map.get(state.tokens, product) do
+      %{"token" => token, "url" => url} ->
+        {:reply, {url, get_auth_header(token)}, state}
+      _ ->
+        {:reply, {:error, "Token not available"}, state}
+    end
   end
 
   @impl true
@@ -155,32 +159,53 @@ defmodule Whatsapp.Auth.Server do
     Process.send_after(self(), :token_check, @daily)
   end
 
-  def update_expired_tokens(providers) do
-    Enum.reduce(providers, %{}, fn provider, credentials ->
-      credentials_product = Map.get(credentials, provider.name)
-      expires = Map.get(credentials_product, "expires_after")
-      hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+  def update_expired_tokens(providers, stored_tokens) do
+    Logger.info("Updating tokens")
+    Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
 
-      credentials = (hours_diff < 24 && Manager.login(provider)) || credentials
+      token_data = Map.get(stored_tokens, provider.name)
+      if token_data != nil do
+        expires = Map.get(token_data, "expires_after")
+        hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
 
-      Map.put(credentials, provider.name, Map.put(credentials, "url", provider.url))
+        if hours_diff < 24 do
+          try do
+            case Manager.login(provider) do
+              {:ok, new_token_data} ->
+                Map.put(providers_tokens_data, provider.name, new_token_data)
+              {:error, reason} ->
+                Map.put(providers_tokens_data, :errors, reason)
+            end
+          rescue
+            error ->
+              previous_errors = Map.get(providers_tokens_data, :errors, [])
+              errors = [{provider.name, inspect(error)} | previous_errors]
+              Map.put(providers_tokens_data, :errors, errors)
+          end
+        else
+          Map.put(providers_tokens_data, provider.name, token_data)
+        end
+      else
+        Map.put(providers_tokens_data, provider.name, %{})
+      end
+
     end)
   end
 
   def get_tokens_info(providers) do
-    Enum.reduce(providers, %{}, fn provider, credentials ->
+    Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
       try do
-        credentials_provider =
-          provider
-          |> Manager.login()
-          |> Map.put("url", provider.url)
-
-        Map.put(credentials, provider.name, credentials_provider)
+        case Manager.login(provider) do
+          {:ok, new_token_data} ->
+            Map.put(providers_tokens_data, provider.name, new_token_data)
+          {:error, reason} ->
+            Map.put(providers_tokens_data, :errors, reason)
+        end
       rescue
         error ->
-          previous_errors = Map.get(credentials, :errors, [])
+          previous_errors = Map.get(providers_tokens_data, :errors, [])
           errors = [{provider.name, inspect(error)} | previous_errors]
-          Map.put(credentials, :errors, errors)
+          Map.put(providers_tokens_data, :errors, errors)
       end
     end)
   end
