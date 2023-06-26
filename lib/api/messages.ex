@@ -21,6 +21,8 @@ defmodule Whatsapp.Api.Messages do
 
   require Logger
 
+  def send({:error, error} = error, _), do: error
+
   def send({url, auth_header}, %MessageOutbound{} = message) do
     with {:ok, message_validated} <- MessageOutbound.validate(message) do
       message = MessageOutbound.to_json(message_validated)
@@ -31,6 +33,8 @@ defmodule Whatsapp.Api.Messages do
       |> @parser.parse(:messages_send)
     end
   end
+
+  def send_hsm({:error, error} = error, _), do: error
 
   def send_hsm({url, auth_header}, %MessageOutboundHsm{} = message) do
     with {:ok, message_validated} <- MessageOutboundHsm.validate(message) do
@@ -44,6 +48,8 @@ defmodule Whatsapp.Api.Messages do
       |> @parser.parse(:messages_send)
     end
   end
+
+  def send_media_hsm({:error, error} = error, _), do: error
 
   def send_media_hsm({url, auth_header} = token_info, %MessageOutboundMediaHsm{} = message) do
     with :ok <- MessageOutboundMediaHsm.validate(message),
@@ -60,6 +66,8 @@ defmodule Whatsapp.Api.Messages do
     end
   end
 
+  def send_media_hsm({:error, error} = error, _), do: error
+
   def send_media_hsm({url, auth_header}, %MessageOutboundMediaIdHsm{} = message) do
     with {:ok, message_validated} <- MessageOutboundMediaIdHsm.validate(message) do
       message = MessageOutboundMediaIdHsm.to_json(message_validated)
@@ -70,6 +78,8 @@ defmodule Whatsapp.Api.Messages do
       |> @parser.parse(:messages_send)
     end
   end
+
+  def send_media({:error, error} = error, _), do: error
 
   def send_media({url, auth_header}, %MessageOutboundMediaGeneral{} = message) do
     with {:ok, message_validated} <- MessageOutboundMediaGeneral.validate(message) do
@@ -96,6 +106,8 @@ defmodule Whatsapp.Api.Messages do
     end
   end
 
+  def send_message_interactive({:error, error} = error, _), do: error
+
   def send_message_interactive({url, auth_header}, %MessageOutboundInteractive{} = message) do
     with {:ok, message_validated} <- MessageOutboundInteractive.validate(message) do
       message = MessageOutboundInteractive.to_json(message_validated)
@@ -106,6 +118,8 @@ defmodule Whatsapp.Api.Messages do
       |> @parser.parse(:messages_send)
     end
   end
+
+  def send_hsm_interactive({:error, error} = error, _), do: error
 
   def send_hsm_interactive({url, auth_header}, %MessageOutboundHsmInteractive{} = message) do
     with {:ok, message_validated} <- MessageOutboundHsmInteractive.validate(message) do

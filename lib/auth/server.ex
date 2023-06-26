@@ -4,15 +4,15 @@ defmodule Whatsapp.Auth.Server do
   """
 
   # Every 24 hours
-  # @daily 24 * 60 * 60 * 1_000
-  @daily 60 * 1_000
+  @daily 24 * 60 * 60 * 1_000
+  @five_minute 5 * 60 * 1_000
   @server __MODULE__
 
   require Logger
 
   use GenServer
 
-  alias Whatsapp.Auth.Manager
+  alias Whatsapp.Auth.{Manager, Token}
   alias Whatsapp.Models.WhatsappProvider
 
   @doc """
@@ -98,6 +98,7 @@ defmodule Whatsapp.Auth.Server do
     case Map.get(state.tokens, product) do
       %{"token" => token, "url" => url} ->
         {:reply, {url, get_auth_header(token)}, state}
+
       _ ->
         {:reply, {:error, "Token not available"}, state}
     end
@@ -161,53 +162,44 @@ defmodule Whatsapp.Auth.Server do
 
   def update_expired_tokens(providers, stored_tokens) do
     Logger.info("Updating tokens")
-    Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
 
-      token_data = Map.get(stored_tokens, provider.name)
-      if token_data != nil do
-        expires = Map.get(token_data, "expires_after")
-        hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+    result =
+      Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
+        token_data = Map.get(stored_tokens, provider.name)
 
-        if hours_diff < 24 do
-          try do
-            case Manager.login(provider) do
-              {:ok, new_token_data} ->
-                Map.put(providers_tokens_data, provider.name, new_token_data)
-              {:error, reason} ->
-                Map.put(providers_tokens_data, :errors, reason)
-            end
-          rescue
-            error ->
-              previous_errors = Map.get(providers_tokens_data, :errors, [])
-              errors = [{provider.name, inspect(error)} | previous_errors]
-              Map.put(providers_tokens_data, :errors, errors)
+        if token_data != nil do
+          expires = Map.get(token_data, "expires_after")
+          hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+
+          if hours_diff < 24 do
+            Token.renew(provider, providers_tokens_data)
+          else
+            Map.put(providers_tokens_data, provider.name, token_data)
           end
         else
-          Map.put(providers_tokens_data, provider.name, token_data)
+          Token.renew(provider, providers_tokens_data)
         end
-      else
-        Map.put(providers_tokens_data, provider.name, %{})
-      end
+      end)
 
-    end)
+    validate_error(result)
   end
 
   def get_tokens_info(providers) do
-    Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
-      try do
-        case Manager.login(provider) do
-          {:ok, new_token_data} ->
-            Map.put(providers_tokens_data, provider.name, new_token_data)
-          {:error, reason} ->
-            Map.put(providers_tokens_data, :errors, reason)
-        end
-      rescue
-        error ->
-          previous_errors = Map.get(providers_tokens_data, :errors, [])
-          errors = [{provider.name, inspect(error)} | previous_errors]
-          Map.put(providers_tokens_data, :errors, errors)
-      end
-    end)
+    result =
+      Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
+        Token.renew(provider, providers_tokens_data)
+      end)
+
+    validate_error(result)
+  end
+
+  def validate_error(result) do
+    if Map.has_key?(result, :errors) do
+      Logger.error("There are error in fetching tokens credentials")
+      Process.send_after(self(), :token_check, @five_minute)
+    end
+
+    result
   end
 
   # Remueve las configuraciones inválidas de providers

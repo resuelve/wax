@@ -8,10 +8,14 @@ defmodule Whatsapp.Api.Contacts do
   @doc """
   Valida la lista de teléfonos dada con el provider de Whatsapp
   """
+  def check_list({:error, error} = error, _, _), do: error
+
   @spec check_list(tuple(), [String.t()], boolean) :: map
   def check_list(token_info, phone_list, wait \\ true) when is_list(phone_list) do
     _check_list(token_info, phone_list, wait)
   end
+
+  def check({:error, _} = error, _, _), do: error
 
   @doc """
   Valida un teléfono con el provider de Whatsapp
