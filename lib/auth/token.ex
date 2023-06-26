@@ -1,4 +1,8 @@
 defmodule Whatsapp.Auth.Token do
+  @moduledoc """
+  Modulo para obtener las nuevas credenciales de wa
+  """
+
   alias Whatsapp.Auth.Manager
 
   @spec renew(%Whatsapp.Models.WhatsappProvider{}, map()) :: map()
