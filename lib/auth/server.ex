@@ -5,7 +5,7 @@ defmodule Whatsapp.Auth.Server do
 
   # Every 24 hours
   @daily 24 * 60 * 60 * 1_000
-  @five_minute 5 * 60 * 1_000
+  @five_minutes 5 * 60 * 1_000
   @server __MODULE__
 
   require Logger
@@ -166,22 +166,28 @@ defmodule Whatsapp.Auth.Server do
     result =
       Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
         token_data = Map.get(stored_tokens, provider.name)
-
-        if token_data != nil do
-          expires = Map.get(token_data, "expires_after")
-          hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
-
-          if hours_diff < 24 do
-            Token.renew(provider, providers_tokens_data)
-          else
-            Map.put(providers_tokens_data, provider.name, token_data)
-          end
-        else
-          Token.renew(provider, providers_tokens_data)
-        end
+        update_token(token_data, provider, providers_tokens_data)
       end)
 
     validate_error(result)
+  end
+
+  defp update_token(nil, provider, providers_tokens_data) do
+    Token.renew(provider, providers_tokens_data)
+  end
+
+  defp update_token(token_data, provider, providers_tokens_data) do
+    expires = Map.get(token_data, "expires_after")
+
+    case token_about_to_expire?(expires) do
+      true -> Token.renew(provider, providers_tokens_data)
+      false -> Map.put(providers_tokens_data, provider.name, token_data)
+    end
+  end
+
+  defp token_about_to_expire?(expires) do
+    hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+    hours_diff < 24
   end
 
   def get_tokens_info(providers) do
@@ -196,7 +202,7 @@ defmodule Whatsapp.Auth.Server do
   def validate_error(result) do
     if Map.has_key?(result, :errors) do
       Logger.error("There are error in fetching tokens credentials")
-      Process.send_after(self(), :token_check, @five_minute)
+      Process.send_after(self(), :token_check, @five_minutes)
     end
 
     result

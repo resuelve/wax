@@ -11,7 +11,7 @@ defmodule Whatsapp.Auth.Manager do
   @doc """
   Generar nuevo token de login
   """
-  @spec login(WhatsappProvider.t()) :: map
+  @spec login(WhatsappProvider.t()) :: {:ok, map()} | {:error, String.t()}
   def login(%WhatsappProvider{} = provider) do
     auth_header = generate_login_auth_header(provider.username, provider.password)
 

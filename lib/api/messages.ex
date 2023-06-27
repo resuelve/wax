@@ -66,8 +66,6 @@ defmodule Whatsapp.Api.Messages do
     end
   end
 
-  def send_media_hsm({:error, _} = error, _), do: error
-
   def send_media_hsm({url, auth_header}, %MessageOutboundMediaIdHsm{} = message) do
     with {:ok, message_validated} <- MessageOutboundMediaIdHsm.validate(message) do
       message = MessageOutboundMediaIdHsm.to_json(message_validated)
