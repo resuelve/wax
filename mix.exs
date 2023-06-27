@@ -5,7 +5,7 @@ defmodule WhatsappApi.MixProject do
     [
       app: :wax,
       elixirc_paths: elixirc_paths(Mix.env()),
-      version: "0.7.7",
+      version: "0.7.8",
       description: "Whatsapp Elixir Client",
       elixir: "~> 1.6",
       package: package(),

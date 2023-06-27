@@ -5,13 +5,14 @@ defmodule Whatsapp.Auth.Server do
 
   # Every 24 hours
   @daily 24 * 60 * 60 * 1_000
+  @five_minutes 5 * 60 * 1_000
   @server __MODULE__
 
   require Logger
 
   use GenServer
 
-  alias Whatsapp.Auth.Manager
+  alias Whatsapp.Auth.{Manager, Token}
   alias Whatsapp.Models.WhatsappProvider
 
   @doc """
@@ -57,7 +58,6 @@ defmodule Whatsapp.Auth.Server do
   def init(providers) do
     Process.flag(:trap_exit, true)
     Logger.info("Whatsapp Auth System online")
-
     schedule_token_check()
 
     {:ok, do_load_config(providers)}
@@ -81,11 +81,11 @@ defmodule Whatsapp.Auth.Server do
   end
 
   @impl true
-  def handle_info(:token_check, %{providers: providers} = state) do
+  def handle_info(:token_check, %{providers: providers, tokens: tokens} = state) do
     Logger.info("Checking tokens")
-    tokens = update_expired_tokens(providers)
+    updated_tokens = update_expired_tokens(providers, tokens)
     schedule_token_check()
-    {:noreply, Map.put(state, :tokens, tokens)}
+    {:noreply, Map.put(state, :tokens, updated_tokens)}
   end
 
   @impl true
@@ -95,8 +95,13 @@ defmodule Whatsapp.Auth.Server do
 
   @impl true
   def handle_call({:lookup_token, product}, _from, state) do
-    %{"token" => token, "url" => url} = Map.get(state.tokens, product)
-    {:reply, {url, get_auth_header(token)}, state}
+    case Map.get(state.tokens, product) do
+      %{"token" => token, "url" => url} ->
+        {:reply, {url, get_auth_header(token)}, state}
+
+      _ ->
+        {:reply, {:error, "Token not available"}, state}
+    end
   end
 
   @impl true
@@ -155,34 +160,52 @@ defmodule Whatsapp.Auth.Server do
     Process.send_after(self(), :token_check, @daily)
   end
 
-  def update_expired_tokens(providers) do
-    Enum.reduce(providers, %{}, fn provider, credentials ->
-      credentials_product = Map.get(credentials, provider.name)
-      expires = Map.get(credentials_product, "expires_after")
-      hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+  def update_expired_tokens(providers, stored_tokens) do
+    Logger.info("Updating tokens")
 
-      credentials = (hours_diff < 24 && Manager.login(provider)) || credentials
+    result =
+      Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
+        token_data = Map.get(stored_tokens, provider.name)
+        update_token(token_data, provider, providers_tokens_data)
+      end)
 
-      Map.put(credentials, provider.name, Map.put(credentials, "url", provider.url))
-    end)
+    validate_error(result)
+  end
+
+  defp update_token(nil, provider, providers_tokens_data) do
+    Token.renew(provider, providers_tokens_data)
+  end
+
+  defp update_token(token_data, provider, providers_tokens_data) do
+    expires = Map.get(token_data, "expires_after")
+
+    case token_about_to_expire?(expires) do
+      true -> Token.renew(provider, providers_tokens_data)
+      false -> Map.put(providers_tokens_data, provider.name, token_data)
+    end
+  end
+
+  defp token_about_to_expire?(expires) do
+    hours_diff = (expires && Timex.diff(expires, Timex.now(), :hours)) || 0
+    hours_diff < 24
   end
 
   def get_tokens_info(providers) do
-    Enum.reduce(providers, %{}, fn provider, credentials ->
-      try do
-        credentials_provider =
-          provider
-          |> Manager.login()
-          |> Map.put("url", provider.url)
+    result =
+      Enum.reduce(providers, %{}, fn provider, providers_tokens_data ->
+        Token.renew(provider, providers_tokens_data)
+      end)
 
-        Map.put(credentials, provider.name, credentials_provider)
-      rescue
-        error ->
-          previous_errors = Map.get(credentials, :errors, [])
-          errors = [{provider.name, inspect(error)} | previous_errors]
-          Map.put(credentials, :errors, errors)
-      end
-    end)
+    validate_error(result)
+  end
+
+  def validate_error(result) do
+    if Map.has_key?(result, :errors) do
+      Logger.error("There are error in fetching tokens credentials")
+      Process.send_after(self(), :token_check, @five_minutes)
+    end
+
+    result
   end
 
   # Remueve las configuraciones inválidas de providers
