@@ -21,6 +21,9 @@ defmodule Whatsapp.Parser do
     body
   end
 
+  defp _parse(_type, {:error, :max_attempts_exceeded}), do:
+    {:error, "Max attempts exceeded"}
+
   defp _parse(_type, _response) do
     {:error, "Error parsing response"}
   end

@@ -1,7 +1,11 @@
 defmodule WhatsappApiRequest do
   use HTTPoison.Base
+  require Logger
 
   @default_headers [{"Content-Type", "application/json"}]
+  # Parámetros para reintentos
+  @attempts_limit 3
+  @back_off_in_ms 200
 
   # 20 requests per second
   @limit 20
@@ -30,12 +34,11 @@ defmodule WhatsappApiRequest do
   end
 
   def rate_limit_request(url, method, data, headers) do
-    IO.inspect("***************HI*****************")
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
 
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
-        apply(__MODULE__, method, [url, data, headers])
+        apply_request(url, method, [url, data, headers], 0)
 
       {:error, _} ->
         :timer.sleep(100)
@@ -55,9 +58,25 @@ defmodule WhatsappApiRequest do
     Jason.decode!(body)
   end
 
-  # Para GET, no se necesita pasar un body
-  defp apply_by_method_type(method, params) when method in [:get, :get!],
-    do: apply(__MODULE__, method, params)
+  def apply_request(_url, _method, _params, @attempts_limit), do: {:error, :max_attempts_exceeded}
 
-  defp apply_by_method_type(method, params), do: apply(__MODULE__, method, params)
+  def apply_request(url, method, params, attempts) do
+    apply(__MODULE__, method, params)
+  rescue
+    reason ->
+      retry = attempts + 1
+
+      IO.inspect(reason, label: :reason)
+
+      Logger.info("Got a HTTP Error. Attempts: #{retry} of #{@attempts_limit}",
+        reason: inspect(reason),
+        attempts: retry,
+        params: inspect(params),
+        url: url,
+        method: "#{method}"
+      )
+
+      :timer.sleep(retry * @back_off_in_ms)
+      apply_request(url, method, params, retry)
+  end
 end
