@@ -30,6 +30,7 @@ defmodule WhatsappApiRequest do
   end
 
   def rate_limit_request(url, method, data, headers) do
+    IO.inspect("***************HI*****************")
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
 
     case ExRated.check_rate(host, @scale, @limit) do
@@ -53,4 +54,10 @@ defmodule WhatsappApiRequest do
   def process_response_body(body) do
     Jason.decode!(body)
   end
+
+  # Para GET, no se necesita pasar un body
+  defp apply_by_method_type(method, params) when method in [:get, :get!],
+    do: apply(__MODULE__, method, params)
+
+  defp apply_by_method_type(method, params), do: apply(__MODULE__, method, params)
 end

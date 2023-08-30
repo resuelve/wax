@@ -2,7 +2,7 @@ defmodule Whatsapp.Api.Contacts do
   @moduledoc """
   Módulo para el manejo de contactos de Whatsapp
   """
-
+  require Logger
   @parser Application.get_env(:wax, :parser)
 
   @doc """
@@ -40,5 +40,15 @@ defmodule Whatsapp.Api.Contacts do
     |> Kernel.<>("/contacts")
     |> WhatsappApiRequest.rate_limit_request(:post!, data, [auth_header])
     |> @parser.parse(:contacts_check)
+  rescue
+    reason ->
+      IO.inspect(reason, label: :reason)
+      phone_list_to_string = Enum.join(phone_list, ", ")
+
+      Logger.info("#{phone_list_to_string} - Got an error during check contacts",
+        reason: inspect(reason)
+      )
+
+      {:error, "HTTP Error"}
   end
 end

@@ -4,7 +4,7 @@ defmodule Whatsapp.Api.ContactsTest do
   import Mock
   alias Whatsapp.Api.Contacts
 
-  test "Should check contact", %{token_info: token_info} do
+  test "check_list/2 Should check a phone list", %{token_info: token_info} do
     with_mocks([
       {
         WhatsappApiRequest,
@@ -31,7 +31,7 @@ defmodule Whatsapp.Api.ContactsTest do
         ]
       }
     ]) do
-      assert Contacts.check(token_info, ["5566295500", "1-631-555-1002"]) == %{
+      assert Contacts.check_list(token_info, ["5566295500", "1-631-555-1002"]) == %{
                "contacts" => [
                  %{
                    "input" => "5566295500",
@@ -45,6 +45,24 @@ defmodule Whatsapp.Api.ContactsTest do
                ],
                "meta" => %{}
              }
+    end
+  end
+
+  test "check/2 Should check a single phone", %{token_info: token_info} do
+    with_mocks([
+      {
+        WhatsappApiRequest,
+        [],
+        [
+          rate_limit_request!: fn _, _, _, _ ->
+            raise %HTTPoison.Error{
+              reason: :closed
+            }
+          end
+        ]
+      }
+    ]) do
+      assert :misa == Contacts.check(token_info, "5566295500")
     end
   end
 end
