@@ -20,29 +20,22 @@ defmodule WhatsappApiRequest do
     ] ++ options
   end
 
-  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!] do
+  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!],
+    do: check_rate_and_prepare_request(url, method_get, [url, headers])
+
+  def rate_limit_request(url, method, data, headers),
+    do: check_rate_and_prepare_request(url, method, [url, data, headers])
+
+  defp check_rate_and_prepare_request(url, method, params) do
     [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
 
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
-        apply_request(url, method_get, [url, headers], 0)
+        apply_request(url, method, params, 0)
 
       {:error, _} ->
         :timer.sleep(100)
-        rate_limit_request(url, method_get, headers)
-    end
-  end
-
-  def rate_limit_request(url, method, data, headers) do
-    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
-
-    case ExRated.check_rate(host, @scale, @limit) do
-      {:ok, _} ->
-        apply_request(url, method, [url, data, headers], 0)
-
-      {:error, _} ->
-        :timer.sleep(100)
-        rate_limit_request(url, method, data, headers)
+        check_rate_and_prepare_request(url, method, params)
     end
   end
 
@@ -58,9 +51,10 @@ defmodule WhatsappApiRequest do
     Jason.decode!(body)
   end
 
-  def apply_request(url, method, params, @attempts_limit), do: {:error, :max_attempts_exceeded}
+  defp apply_request(_url, _method, _params, @attempts_limit),
+    do: {:error, :max_attempts_exceeded}
 
-  def apply_request(url, method, params, attempts) do
+  defp apply_request(url, method, params, attempts) do
     apply(__MODULE__, method, params)
   rescue
     reason ->
