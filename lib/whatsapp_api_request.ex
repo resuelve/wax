@@ -31,7 +31,7 @@ defmodule WhatsappApiRequest do
 
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
-        apply_request(url, method, params, 0)
+        maybe_apply_request(url, method, params, 0)
 
       {:error, _} ->
         :timer.sleep(100)
@@ -51,10 +51,10 @@ defmodule WhatsappApiRequest do
     Jason.decode!(body)
   end
 
-  defp apply_request(_url, _method, _params, @attempts_limit),
+  defp maybe_apply_request(_url, _method, _params, @attempts_limit),
     do: {:error, :max_attempts_exceeded}
 
-  defp apply_request(url, method, params, attempts) do
+  defp maybe_apply_request(url, method, params, attempts) do
     apply(__MODULE__, method, params)
   rescue
     reason ->
@@ -69,6 +69,6 @@ defmodule WhatsappApiRequest do
       )
 
       :timer.sleep(retry_back_of)
-      apply_request(url, method, params, retry)
+      maybe_apply_request(url, method, params, retry)
   end
 end
