@@ -58,15 +58,7 @@ defmodule WhatsappApiRequest do
     Jason.decode!(body)
   end
 
-  def apply_request(url, method, params, @attempts_limit) do
-    Logger.info("Failed HTTP request after 3 attempts",
-      params: inspect(params),
-      url: url,
-      method: "#{method}"
-    )
-
-    {:error, :max_attempts_exceeded}
-  end
+  def apply_request(url, method, params, @attempts_limit), do: {:error, :max_attempts_exceeded}
 
   def apply_request(url, method, params, attempts) do
     apply(__MODULE__, method, params)
