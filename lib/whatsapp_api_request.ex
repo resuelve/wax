@@ -3,9 +3,9 @@ defmodule WhatsappApiRequest do
   require Logger
 
   @default_headers [{"Content-Type", "application/json"}]
-  # Parámetros para reintentos
-  @attempts_limit 3
-  @back_off_in_ms 200
+  # Retry params
+  @attempts_limit 4
+  @back_off_in_ms 100
 
   # 20 requests per second
   @limit 20
@@ -25,7 +25,7 @@ defmodule WhatsappApiRequest do
 
     case ExRated.check_rate(host, @scale, @limit) do
       {:ok, _} ->
-        apply(__MODULE__, method_get, [url, headers])
+        apply_request(url, method_get, [url, headers], 0)
 
       {:error, _} ->
         :timer.sleep(100)
@@ -58,25 +58,31 @@ defmodule WhatsappApiRequest do
     Jason.decode!(body)
   end
 
-  def apply_request(_url, _method, _params, @attempts_limit), do: {:error, :max_attempts_exceeded}
+  def apply_request(url, method, params, @attempts_limit) do
+    Logger.info("Failed HTTP request after 3 attempts",
+      params: inspect(params),
+      url: url,
+      method: "#{method}"
+    )
+
+    {:error, :max_attempts_exceeded}
+  end
 
   def apply_request(url, method, params, attempts) do
     apply(__MODULE__, method, params)
   rescue
     reason ->
       retry = attempts + 1
+      retry_back_of = retry * @back_off_in_ms
 
-      IO.inspect(reason, label: :reason)
-
-      Logger.info("Got a HTTP Error. Attempts: #{retry} of #{@attempts_limit}",
+      Logger.info("Got a HTTP Error, will retry in #{retry_back_of}ms",
         reason: inspect(reason),
-        attempts: retry,
         params: inspect(params),
         url: url,
         method: "#{method}"
       )
 
-      :timer.sleep(retry * @back_off_in_ms)
+      :timer.sleep(retry_back_of)
       apply_request(url, method, params, retry)
   end
 end
