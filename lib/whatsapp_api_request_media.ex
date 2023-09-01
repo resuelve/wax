@@ -12,11 +12,27 @@ defmodule WhatsappApiRequestMedia do
     ] ++ options
   end
 
+  @spec rate_limit_request(url(), method(), body(), headers()) ::
+          HTTPoison.Response.t() | {:error, :max_attempts_exceeded}
   def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!],
-    do: WhatsappApiBaseRequest.check_rate_and_prepare_request(__MODULE__, url, method_get, [url, headers], 0)
+    do:
+      WhatsappApiBaseRequest.check_rate_and_prepare_request(
+        __MODULE__,
+        url,
+        method_get,
+        [url, headers],
+        0
+      )
 
   def rate_limit_request(url, method, data, headers),
-    do: WhatsappApiBaseRequest.check_rate_and_prepare_request(__MODULE__, url, method, [url, data, headers], 0)
+    do:
+      WhatsappApiBaseRequest.check_rate_and_prepare_request(
+        __MODULE__,
+        url,
+        method,
+        [url, data, headers],
+        0
+      )
 
   def process_request_headers(headers \\ []), do: headers ++ @default_headers
 

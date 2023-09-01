@@ -15,7 +15,8 @@ defmodule WhatsappApiBaseRequest do
   If something goes wrong, it will retry up to 3 times.
   When the max attempts is exceeded it will return a {:error, :max_attempts_exceeded}
   """
-  @spec check_rate_and_prepare_request(module(), String.t(), atom(), list(), non_neg_integer())
+  @spec check_rate_and_prepare_request(module(), String.t(), atom(), list(), non_neg_integer()) ::
+          HTTPoison.Response.t() | {:error, :max_attempts_exceeded}
   def check_rate_and_prepare_request(_module, _url, _method, _params, @attempts_limit),
     do: {:error, :max_attempts_exceeded}
 

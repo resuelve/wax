@@ -2,7 +2,6 @@ defmodule Whatsapp.Api.Contacts do
   @moduledoc """
   Módulo para el manejo de contactos de Whatsapp
   """
-  require Logger
   @parser Application.get_env(:wax, :parser)
 
   @doc """
