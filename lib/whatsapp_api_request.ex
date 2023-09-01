@@ -1,15 +1,7 @@
 defmodule WhatsappApiRequest do
   use HTTPoison.Base
-  require Logger
 
   @default_headers [{"Content-Type", "application/json"}]
-  # Retry params
-  @attempts_limit 4
-  @back_off_in_ms 100
-
-  # 20 requests per second
-  @limit 20
-  @scale 1_000
 
   def process_request_options(options) do
     [
@@ -21,54 +13,14 @@ defmodule WhatsappApiRequest do
   end
 
   def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!],
-    do: check_rate_and_prepare_request(url, method_get, [url, headers])
+    do: WhatsappApiBaseRequest.check_rate_and_prepare_request(__MODULE__, url, method_get, [url, headers], 0)
 
   def rate_limit_request(url, method, data, headers),
-    do: check_rate_and_prepare_request(url, method, [url, data, headers])
+    do: WhatsappApiBaseRequest.check_rate_and_prepare_request(__MODULE__, url, method, [url, data, headers], 0)
 
-  defp check_rate_and_prepare_request(url, method, params) do
-    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+  def process_request_body(body), do: Jason.encode!(body)
 
-    case ExRated.check_rate(host, @scale, @limit) do
-      {:ok, _} ->
-        maybe_apply_request(url, method, params, 0)
+  def process_request_headers(headers \\ []), do: headers ++ @default_headers
 
-      {:error, _} ->
-        :timer.sleep(100)
-        check_rate_and_prepare_request(url, method, params)
-    end
-  end
-
-  def process_request_body(body) do
-    Jason.encode!(body)
-  end
-
-  def process_request_headers(headers \\ []) do
-    headers ++ @default_headers
-  end
-
-  def process_response_body(body) do
-    Jason.decode!(body)
-  end
-
-  defp maybe_apply_request(_url, _method, _params, @attempts_limit),
-    do: {:error, :max_attempts_exceeded}
-
-  defp maybe_apply_request(url, method, params, attempts) do
-    apply(__MODULE__, method, params)
-  rescue
-    reason ->
-      retry = attempts + 1
-      retry_back_of = retry * @back_off_in_ms
-
-      Logger.info("Got a HTTP Error, will retry in #{retry_back_of}ms",
-        reason: inspect(reason),
-        params: inspect(params),
-        url: url,
-        method: "#{method}"
-      )
-
-      :timer.sleep(retry_back_of)
-      maybe_apply_request(url, method, params, retry)
-  end
+  def process_response_body(body), do: Jason.decode!(body)
 end
