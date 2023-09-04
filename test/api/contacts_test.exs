@@ -54,15 +54,33 @@ defmodule Whatsapp.Api.ContactsTest do
         WhatsappApiRequest,
         [],
         [
-          rate_limit_request!: fn _, _, _, _ ->
-            raise %HTTPoison.Error{
-              reason: :closed
+          rate_limit_request: fn _, _, _, _ ->
+            %HTTPoison.Response{
+              body: %{
+                "contacts" => [
+                  %{
+                    "input" => "5215518147359",
+                    "status" => "valid",
+                    "wa_id" => "5215518147359"
+                  }
+                ],
+                "meta" => %{}
+              }
             }
           end
         ]
       }
     ]) do
-      assert :misa == Contacts.check(token_info, "5566295500")
+      assert Contacts.check(token_info, "5215518147359") == %{
+               "contacts" => [
+                 %{
+                   "input" => "5215518147359",
+                   "status" => "valid",
+                   "wa_id" => "5215518147359"
+                 }
+               ],
+               "meta" => %{}
+             }
     end
   end
 end
