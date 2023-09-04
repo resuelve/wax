@@ -3,10 +3,6 @@ defmodule WhatsappApiRequest do
 
   @default_headers [{"Content-Type", "application/json"}]
 
-  # 20 requests per second
-  @limit 20
-  @scale 1_000
-
   def process_request_options(options) do
     [
       hackney: [:insecure],
@@ -16,41 +12,31 @@ defmodule WhatsappApiRequest do
     ] ++ options
   end
 
-  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!] do
-    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+  @spec rate_limit_request(url(), method(), body(), headers()) ::
+          HTTPoison.Response.t() | {:error, :max_attempts_exceeded}
+  def rate_limit_request(url, method_get, headers) when method_get in [:get, :get!],
+    do:
+      WhatsappApiBaseRequest.check_rate_and_prepare_request(
+        __MODULE__,
+        url,
+        method_get,
+        [url, headers],
+        0
+      )
 
-    case ExRated.check_rate(host, @scale, @limit) do
-      {:ok, _} ->
-        apply(__MODULE__, method_get, [url, headers])
+  def rate_limit_request(url, method, body, headers),
+    do:
+      WhatsappApiBaseRequest.check_rate_and_prepare_request(
+        __MODULE__,
+        url,
+        method,
+        [url, body, headers],
+        0
+      )
 
-      {:error, _} ->
-        :timer.sleep(100)
-        rate_limit_request(url, method_get, headers)
-    end
-  end
+  def process_request_body(body), do: Jason.encode!(body)
 
-  def rate_limit_request(url, method, data, headers) do
-    [_, _, host, _] = Regex.run(~r/(.+:\/\/)?([^\/]+)(\/.*)*/, url)
+  def process_request_headers(headers \\ []), do: headers ++ @default_headers
 
-    case ExRated.check_rate(host, @scale, @limit) do
-      {:ok, _} ->
-        apply(__MODULE__, method, [url, data, headers])
-
-      {:error, _} ->
-        :timer.sleep(100)
-        rate_limit_request(url, method, data, headers)
-    end
-  end
-
-  def process_request_body(body) do
-    Jason.encode!(body)
-  end
-
-  def process_request_headers(headers \\ []) do
-    headers ++ @default_headers
-  end
-
-  def process_response_body(body) do
-    Jason.decode!(body)
-  end
+  def process_response_body(body), do: Jason.decode!(body)
 end
