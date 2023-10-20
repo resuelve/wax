@@ -37,7 +37,8 @@ defmodule WhatsappApiBaseRequest do
     apply(module, method, params)
   rescue
     reason ->
-      Logger.info("Got a HTTP Error, attempts #{attempts}",
+      Logger.info(
+        "Got a HTTP Error, attempts #{attempts}",
         reason: inspect(reason),
         params: inspect(params),
         url: url,

@@ -14,7 +14,8 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
     element_name: nil,
     language_policy: nil,
     language_code: nil,
-    params: nil
+    params: nil,
+    params_header: nil
   )
 
   @valid_language_policies ["deterministic"]
@@ -68,12 +69,7 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
       to: message.to,
       type: "template",
       template: %{
-        components: [
-          %{
-            parameters: format_params(message.params),
-            type: "body"
-          }
-        ],
+        components: component_params(message),
         language: %{
           code: message.language_code,
           policy: message.language_policy
@@ -82,5 +78,27 @@ defmodule Whatsapp.Models.MessageOutboundHsm do
         namespace: message.namespace
       }
     }
+  end
+
+  defp component_params(message) do
+    if message.params_header != [] && message.params_header != nil do
+      [
+        %{
+          parameters: format_params(message.params_header),
+          type: "header"
+        },
+        %{
+          parameters: format_params(message.params),
+          type: "body"
+        }
+      ]
+    else
+      [
+        %{
+          parameters: format_params(message.params),
+          type: "body"
+        }
+      ]
+    end
   end
 end
