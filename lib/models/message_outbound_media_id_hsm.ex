@@ -17,7 +17,8 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
     params: nil,
     type: nil,
     media_id: nil,
-    file_name: nil
+    file_name: nil,
+    components: nil
   )
 
   @valid_language_policies ["deterministic"]
@@ -127,16 +128,19 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
           code: message.language_code
         },
         name: message.element_name,
-        components: [
-          %{
-            type: "header",
-            parameters: [_convert_to_parameter(message.type, message.media_id, message.file_name)]
-          },
-          %{
-            type: "body",
-            parameters: _format_params(message.params)
-          }
-        ]
+        components:
+          [
+            %{
+              type: "header",
+              parameters: [
+                _convert_to_parameter(message.type, message.media_id, message.file_name)
+              ]
+            },
+            %{
+              type: "body",
+              parameters: _format_params(message.params)
+            }
+          ] ++ message.components
       }
     }
   end
