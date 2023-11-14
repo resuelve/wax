@@ -128,20 +128,38 @@ defmodule Whatsapp.Models.MessageOutboundMediaIdHsm do
           code: message.language_code
         },
         name: message.element_name,
-        components:
-          [
-            %{
-              type: "header",
-              parameters: [
-                _convert_to_parameter(message.type, message.media_id, message.file_name)
-              ]
-            },
-            %{
-              type: "body",
-              parameters: _format_params(message.params)
-            }
-          ] ++ message.components
+        components: component_params(message)
       }
     }
+  end
+
+  defp component_params(message) do
+    if message.components != nil do
+      [
+        %{
+          type: "header",
+          parameters: [
+            _convert_to_parameter(message.type, message.media_id, message.file_name)
+          ]
+        },
+        %{
+          type: "body",
+          parameters: _format_params(message.params)
+        }
+      ] ++ message.components
+    else
+      [
+        %{
+          type: "header",
+          parameters: [
+            _convert_to_parameter(message.type, message.media_id, message.file_name)
+          ]
+        },
+        %{
+          type: "body",
+          parameters: _format_params(message.params)
+        }
+      ]
+    end
   end
 end
