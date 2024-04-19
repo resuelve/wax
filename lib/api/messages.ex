@@ -53,13 +53,10 @@ defmodule Whatsapp.Api.Messages do
   def send_hsm_otp({:error, _} = error, _), do: error
 
   def send_hsm_otp({url, auth_header}, %MessageOutboundHsmOtp{} = message) do
-    IO.inspect("WAX SEND HSM OTP")
-
     with {:ok, message_validated} <- MessageOutboundHsmOtp.validate(message) do
       headers = [auth_header]
 
       message = MessageOutboundHsmOtp.to_json(message_validated)
-      IO.inspect(message)
 
       url
       |> Kernel.<>("/messages")
