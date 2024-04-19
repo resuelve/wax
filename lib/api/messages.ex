@@ -13,7 +13,8 @@ defmodule Whatsapp.Api.Messages do
     MessageOutboundInteractive,
     MessageOutboundMediaIdHsm,
     MessageOutboundMediaGeneral,
-    MessageOutboundHsmInteractive
+    MessageOutboundHsmInteractive,
+    MessageOutboundHsmOtp
   }
 
   alias WhatsappApiRequest
@@ -41,6 +42,24 @@ defmodule Whatsapp.Api.Messages do
       headers = [auth_header]
 
       message = MessageOutboundHsm.to_json(message_validated)
+
+      url
+      |> Kernel.<>("/messages")
+      |> WhatsappApiRequest.rate_limit_request(:post!, message, headers)
+      |> @parser.parse(:messages_send)
+    end
+  end
+
+  def send_hsm_otp({:error, _} = error, _), do: error
+
+  def send_hsm_otp({url, auth_header}, %MessageOutboundHsmOtp{} = message) do
+    IO.inspect("WAX SEND HSM OTP")
+
+    with {:ok, message_validated} <- MessageOutboundHsmOtp.validate(message) do
+      headers = [auth_header]
+
+      message = MessageOutboundHsmOtp.to_json(message_validated)
+      IO.inspect(message)
 
       url
       |> Kernel.<>("/messages")
