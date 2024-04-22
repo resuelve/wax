@@ -8,7 +8,7 @@ on:
 jobs:
   publish-hexpm:
     name: publish to hex.pm
-    runs-on: self-hosted-rtd
+    runs-on: ubuntu-latest
     env:
       ImageOS: ubuntu20
     container: elixir:1.9.4-alpine
