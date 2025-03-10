@@ -1,0 +1,29 @@
+version: 2
+registries:
+  hex-organization-resuelve:
+    type: hex-organization
+    organization: resuelve
+    key: "${{secrets.HEX_ORGANIZATION_RESUELVE_KEY}}"
+
+updates:
+- package-ecosystem: mix
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "11:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: timex
+    versions:
+    - 3.6.3
+    - 3.6.4
+    - 3.7.0
+    - 3.7.2
+    - 3.7.3
+  - dependency-name: ex_doc
+    versions:
+    - 0.23.0
+    - 0.24.0
+    - 0.24.1
+  registries:
+  - hex-organization-resuelve
