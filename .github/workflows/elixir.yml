@@ -12,8 +12,8 @@ jobs:
     - name: Setup elixir
       uses: erlef/setup-elixir@v1
       with:
-        elixir-version: 1.9.4 # Define the elixir version [required]
-        otp-version: 22.2 # Define the OTP version [required]
+        elixir-version: 1.16.3 # Define the elixir version [required]
+        otp-version: 26.0 # Define the OTP version [required]
     - name: Install Dependencies
       run: mix deps.get
     - name: Warnings as errors
