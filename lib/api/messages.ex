@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Messages do
   Whatsapp api messages
   """
 
-  @parser Application.get_env(:wax, :parser)
+  @parser Application.compile_env(:wax, :parser)
 
   alias Whatsapp.Models.{
     MessageOutbound,

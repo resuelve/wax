@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Health do
   Módulo para el manejo de la salud de Whatsapp
   """
 
-  @parser Application.get_env(:wax, :parser)
+  @parser Application.compile_env(:wax, :parser)
 
   def get_summary({url, auth_header}) do
     url
