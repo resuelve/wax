@@ -3,7 +3,7 @@ defmodule Whatsapp.Api.Account do
   Módulo para el manejo de la configuración de Whatsapp
   """
 
-  @parser Application.get_env(:wax, :parser)
+  @parser Application.compile_env(:wax, :parser)
 
   @doc """
   Registrar una cuenta en Whatsapp

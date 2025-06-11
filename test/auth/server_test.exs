@@ -132,7 +132,7 @@ defmodule Whatsapp.Auth.ServerTest do
       {:ok, _pid} = Server.start_link()
       :ok = Server.load_config(providers)
 
-      %{tokens: tokens} = Server.list_tokens() |> IO.inspect()
+      %{tokens: tokens} = Server.list_tokens()
 
       assert tokens.errors == [
                {"rtd-es-test", inspect(error)},
