@@ -30,3 +30,6 @@ import Config
 #     import_config "#{Mix.env}.exs"
 
 config :wax, parser: Whatsapp.Parser
+
+config :wax,
+  cloud_api_url: "https://graph.facebook.com/v23.0/"
