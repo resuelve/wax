@@ -11,7 +11,7 @@ defmodule Wax.CloudAPI.MessagesTest do
     test_wa_number_id = "TEST0000000001"
     test_token = "TESTTOKEN999"
 
-    auth = %Auth{whatsapp_number_id: test_wa_number_id, token: test_token}
+    auth = Auth.new(test_wa_number_id, test_token)
 
     {:ok, bypass: bypass, auth: auth}
   end

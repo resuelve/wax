@@ -12,4 +12,17 @@ defmodule Wax.CloudAPI.Auth do
     :whatsapp_number_id,
     :token
   ]
+
+  @doc """
+  Creates a Auth struct
+
+  This is required to interact with the Whatsapp Cloud API
+  """
+  @spec new(String.t(), String.t()) :: __MODULE__.t()
+  def new(whatsapp_number_id, token) do
+    %__MODULE__{
+      whatsapp_number_id: whatsapp_number_id,
+      token: token
+    }
+  end
 end
