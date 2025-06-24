@@ -13,12 +13,12 @@ defmodule Whatsapp.Parser do
     {:ok, media_id}
   end
 
-  defp _parse(:media_delete, %Response{status_code: 200, body: body}) do
+  defp _parse(_type, %Response{status_code: 200, body: body}) do
     {:ok, body}
   end
 
-  defp _parse(_type, %Response{body: body}) do
-    body
+  defp _parse(_type, %Response{status_code: status_code, body: body}) do
+    {:error, "HTTP Error #{status_code}: #{inspect(body)}"}
   end
 
   defp _parse(_type, {:error, :max_attempts_exceeded}), do: {:error, "Max attempts exceeded"}
