@@ -10,11 +10,11 @@ defmodule Wax.CloudAPI.ResponseParser do
 
   TODO: Implement a WhatsappResponse struct
   """
-  defp _parse(%Response{status_code: 200, body: body}, _type) do
+  def parse(%Response{status_code: 200, body: body}, _type) do
     {:ok, body}
   end
 
-  defp _parse(%Response{status_code: status_code, body: body}, _type) do
+  def parse(%Response{status_code: status_code, body: body}, _type) do
     {:error, "HTTP Error #{status_code}: #{inspect(body)}"}
   end
 
