@@ -12,7 +12,7 @@ Cliente para comunicar con el servicio de Whatsapp https://developers.facebook.c
 - [ ] Create account
 - [ ] Verify account
 - [ ] Check contact
-- [ ] Send text messages
+- [x] Send text messages
 - [ ] Send hsm messages
 - [ ] Send media messages
 - [ ] Download media

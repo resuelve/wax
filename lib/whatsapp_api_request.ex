@@ -34,7 +34,7 @@ defmodule WhatsappApiRequest do
         0
       )
 
-  def process_request_body(body), do: Jason.encode!(body)
+  def process_request_body(body), do: Jason.encode_to_iodata!(body)
 
   def process_request_headers(headers \\ []), do: headers ++ @default_headers
 
