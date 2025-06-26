@@ -33,7 +33,8 @@ defmodule WhatsappApi.MixProject do
       {:timex, "~> 3.7"},
       {:jason, "~> 1.4.4"},
       {:ex_rated, "~> 2.1.0"},
-      {:bypass, "~> 2.1", only: :test}
+      {:bypass, "~> 2.1", only: :test},
+      {:briefly, "~> 0.5.1", only: :test}
     ]
   end
 
