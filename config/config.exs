@@ -31,5 +31,6 @@ import Config
 
 config :wax, parser: Whatsapp.Parser
 
-config :wax,
-  cloud_api_url: "https://graph.facebook.com/v23.0/"
+config :wax, :cloud_api,
+  url: "https://graph.facebook.com",
+  api_version: "v23.0"

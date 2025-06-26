@@ -18,6 +18,8 @@ defmodule Wax.Messages.Message do
 
   @message_types [:contact, :document, :image, :interactive, :location, :template, :text]
 
+  @typep whatsapp_media_id :: String.t()
+
   @typep message_type ::
            :contact | :document | :image | :interactive | :location | :template | :text
 
@@ -91,7 +93,7 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
-  Checks if a message is valid to be sent to the Cloud API
+  Adds a text object to the message
   """
   @spec set_text(__MODULE__.t(), String.t()) :: __MODULE__.t()
   def set_text(%__MODULE__{} = message, body, preview_url \\ false) do
@@ -99,6 +101,23 @@ defmodule Wax.Messages.Message do
     %{message | text: text}
   end
 
+  @doc """
+  Adds an image object to the message
+
+  Images also accept a text caption to be sent together with it
+  """
+  @spec add_image(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
+  def add_image(%__MODULE__{} = message, media_id, caption \\ nil) do
+    media = %Media{id: media_id, caption: caption}
+
+    %{message | image: media}
+  end
+
+  @doc """
+  Validates a message
+
+  Checks if a message is valid to be sent to the Cloud API
+  """
   @spec validate(__MODULE__.t()) :: :ok | {:error, String.t()}
   def validate(%__MODULE__{to: to}) when to in ["", nil] do
     {:error, "Missing recipient number of message"}
@@ -114,6 +133,16 @@ defmodule Wax.Messages.Message do
 
       _ ->
         {:error, "Text field is required"}
+    end
+  end
+
+  def validate(%__MODULE__{type: :image} = message) do
+    case message.image do
+      %Media{id: id} when is_binary(id) ->
+        :ok
+
+      _ ->
+        {:error, "Media field is required"}
     end
   end
 

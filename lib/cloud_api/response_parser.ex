@@ -10,6 +10,16 @@ defmodule Wax.CloudAPI.ResponseParser do
 
   TODO: Implement a WhatsappResponse struct
   """
+  def parse(%Response{status_code: 200, body: body}, :media_upload) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, %{"id" => media_id}} ->
+        {:ok, media_id}
+
+      _ ->
+        {:error, "Media ID not found in response: #{body}"}
+    end
+  end
+
   def parse(%Response{status_code: 200, body: body}, _type) do
     {:ok, body}
   end

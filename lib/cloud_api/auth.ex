@@ -25,4 +25,12 @@ defmodule Wax.CloudAPI.Auth do
       token: token
     }
   end
+
+  @doc """
+  Builds the Authorization header the Cloud API requires
+  """
+  @spec build_header(__MODULE__.t()) :: {String.t(), bearer_token :: String.t()}
+  def build_header(%__MODULE__{} = auth) do
+    {"Authorization", "Bearer " <> auth.token}
+  end
 end

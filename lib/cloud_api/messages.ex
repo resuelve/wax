@@ -5,6 +5,7 @@ defmodule Wax.CloudAPI.Messages do
   You can send different types of messages using send/2
   """
 
+  alias Wax.CloudAPI
   alias Wax.CloudAPI.{Auth, ResponseParser}
   alias Wax.Messages.Message
 
@@ -13,10 +14,8 @@ defmodule Wax.CloudAPI.Messages do
     with :ok <- Message.validate(message) do
       headers = [{"Authorization", "Bearer " <> auth.token}]
 
-      :wax
-      |> Application.get_env(:cloud_api_url)
-      |> URI.merge("/#{auth.whatsapp_number_id}/messages")
-      |> URI.to_string()
+      auth.whatsapp_number_id
+      |> CloudAPI.build_url("messages")
       |> WhatsappApiRequest.rate_limit_request(:post!, message, headers)
       |> ResponseParser.parse(:messages_send)
     end
