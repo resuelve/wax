@@ -16,12 +16,10 @@ defmodule Wax.Messages.Message do
     Text
   }
 
-  @message_types [:contact, :document, :image, :interactive, :location, :template, :text]
-
   @typep whatsapp_media_id :: String.t()
 
   @typep message_type ::
-           :contact | :document | :image | :interactive | :location | :template | :text
+           :contact | :document | :image | :interactive | :location | :template | :text | :video
 
   @typep whatsapp_id :: String.t()
 
@@ -40,8 +38,11 @@ defmodule Wax.Messages.Message do
           template: Template.t(),
           text: Text.t(),
           to: whatsapp_id(),
-          type: message_type()
+          type: message_type(),
+          video: Media.t()
         }
+
+  @message_types [:contact, :document, :image, :interactive, :location, :template, :text, :video]
 
   @fields_to_encode [
     :audio,
@@ -58,8 +59,10 @@ defmodule Wax.Messages.Message do
     :template,
     :text,
     :to,
-    :type
+    :type,
+    :video
   ]
+
   @derive {Jason.Encoder, only: @fields_to_encode}
   defstruct audio: nil,
             contacts: [],
@@ -75,7 +78,8 @@ defmodule Wax.Messages.Message do
             template: nil,
             text: nil,
             to: nil,
-            type: :text
+            type: :text,
+            video: nil
 
   @doc """
     Creates a new Message structure
@@ -104,13 +108,25 @@ defmodule Wax.Messages.Message do
   @doc """
   Adds an image object to the message
 
-  Images also accept a text caption to be sent together with it
+  Images also accept a text caption that can be added on the same message
   """
   @spec add_image(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_image(%__MODULE__{} = message, media_id, caption \\ nil) do
     media = %Media{id: media_id, caption: caption}
 
     %{message | image: media}
+  end
+
+  @doc """
+  Adds an video object to the message
+
+  Videos also accept a text caption that can be added on the same message
+  """
+  @spec add_video(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
+  def add_video(%__MODULE__{} = message, media_id, caption \\ nil) do
+    media = %Media{id: media_id, caption: caption}
+
+    %{message | video: media}
   end
 
   @doc """
@@ -142,8 +158,16 @@ defmodule Wax.Messages.Message do
         :ok
 
       _ ->
-        {:error, "Media field is required"}
+        {:error, "Image field is required. Use add_image/3 to add_one"}
     end
+  end
+
+  def validate(%__MODULE__{type: :video, video: %Media{id: id}}) when is_binary(id) do
+    :ok
+  end
+
+  def validate(%__MODULE__{type: :video}) do
+    {:error, "Video field is required. Use add_video/3 to add one."}
   end
 
   def validate(%__MODULE__{type: type}) do
