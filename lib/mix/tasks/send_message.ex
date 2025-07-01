@@ -23,7 +23,7 @@ defmodule Mix.Tasks.SendMessage do
 
   use Mix.Task
 
-  @media_message_types ~w(image)
+  @media_message_types ~w(image video)
 
   @requirements ["app.start"]
 
@@ -110,6 +110,12 @@ defmodule Mix.Tasks.SendMessage do
     message
     |> Message.set_type(:image)
     |> Message.add_image(media_id, "This is a caption")
+  end
+
+  defp build_test_message(message, "video", %{media_id: media_id}) do
+    message
+    |> Message.set_type(:video)
+    |> Message.add_video(media_id, "This is a video caption")
   end
 
   defp build_test_message(_message, message_type, _params) do
