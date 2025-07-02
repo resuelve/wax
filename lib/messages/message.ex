@@ -118,7 +118,7 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
-  Adds an video object to the message
+  Adds a video object to the message
 
   Videos also accept a text caption that can be added on the same message
   """
