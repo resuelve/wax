@@ -142,7 +142,7 @@ defmodule Wax.CloudAPI.MessagesTest do
         to
         |> Message.new()
         |> Message.set_type(:audio)
-        |> Message.add_audio(message, media_id)
+        |> Message.add_audio(media_id)
 
       assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
     end
