@@ -5,22 +5,38 @@ defmodule Wax.Messages.Media do
   ## Fields
 
   - id: The media object ID
-  - link: The protocol and URL of the media to be sent
-  - caption: Media asset caption
+  - caption: Media asset caption. Doesn't apply for audio or stickers
   - filename: Describes the filename for the specific document
 
   """
 
+  @type media_type :: :audio | :document | :image | :video
+
   @type t :: %__MODULE__{
           id: String.t(),
-          caption: String.t()
+          caption: String.t(),
+          type: media_type()
         }
 
-  @fields_to_encode ~w(id caption)a
-
-  @derive {Jason.Encoder, only: @fields_to_encode}
   defstruct [
     :id,
-    :caption
+    :caption,
+    :type
   ]
+
+  defimpl Jason.Encoder do
+    def encode(value, opts) do
+      fields =
+        case Map.get(value, :type) do
+          :audio -> [:id]
+          :image -> [:id, :caption]
+          :video -> [:id, :caption]
+          _ -> [:id]
+        end
+
+      value
+      |> Map.take(fields)
+      |> Jason.Encode.map(opts)
+    end
+  end
 end

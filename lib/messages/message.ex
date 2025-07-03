@@ -42,28 +42,18 @@ defmodule Wax.Messages.Message do
           video: Media.t()
         }
 
-  @message_types [:contact, :document, :image, :interactive, :location, :template, :text, :video]
-
-  @fields_to_encode [
+  @message_types [
     :audio,
-    :contacts,
-    :context,
+    :contact,
     :document,
     :image,
     :interactive,
     :location,
-    :messaging_product,
-    :preview_url,
-    :recipient_type,
-    :status,
     :template,
     :text,
-    :to,
-    :type,
     :video
   ]
 
-  @derive {Jason.Encoder, only: @fields_to_encode}
   defstruct audio: nil,
             contacts: [],
             context: nil,
@@ -80,6 +70,26 @@ defmodule Wax.Messages.Message do
             to: nil,
             type: :text,
             video: nil
+
+  defimpl Jason.Encoder do
+    @base_fields [:messaging_product, :recipient_type, :to, :type]
+
+    def encode(value, opts) do
+      fields = @base_fields
+
+      fields =
+        case Map.get(value, :type) do
+          :audio -> [:audio | fields]
+          :image -> [:image | fields]
+          :video -> [:video | fields]
+          _ -> [:text | fields]
+        end
+
+      value
+      |> Map.take(fields)
+      |> Jason.Encode.map(opts)
+    end
+  end
 
   @doc """
     Creates a new Message structure
