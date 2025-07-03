@@ -121,6 +121,16 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
+  Adds an audio object to the message
+  """
+  @spec add_audio(__MODULE__.t(), whatsapp_media_id()) :: __MODULE__.t()
+  def add_audio(%__MODULE__{} = message, media_id) do
+    media = %Media{id: media_id, type: :audio}
+
+    %{message | audio: media}
+  end
+
+  @doc """
   Adds an image object to the message
 
   Images also accept a text caption that can be added on the same message
@@ -142,16 +152,6 @@ defmodule Wax.Messages.Message do
     media = %Media{id: media_id, caption: caption, type: :video}
 
     %{message | video: media}
-  end
-
-  @doc """
-  Adds an audio object to the message
-  """
-  @spec add_audio(__MODULE__.t(), whatsapp_media_id()) :: __MODULE__.t()
-  def add_audio(%__MODULE__{} = message, media_id) do
-    media = %Media{id: media_id, type: :audio}
-
-    %{message | audio: media}
   end
 
   @doc """
