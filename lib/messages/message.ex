@@ -145,6 +145,16 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
+  Adds an audio object to the message
+  """
+  @spec add_audio(__MODULE__.t(), whatsapp_media_id()) :: __MODULE__.t()
+  def add_audio(%__MODULE__{} = message, media_id) do
+    media = %Media{id: media_id, type: :audio}
+
+    %{message | audio: media}
+  end
+
+  @doc """
   Validates a message
 
   Checks if a message is valid to be sent to the Cloud API
@@ -177,8 +187,16 @@ defmodule Wax.Messages.Message do
     end
   end
 
+  def validate(%__MODULE__{type: :audio, audio: %Media{id: id}}) when is_binary(id) do
+    :ok
+  end
+
   def validate(%__MODULE__{type: :video, video: %Media{id: id}}) when is_binary(id) do
     :ok
+  end
+
+  def validate(%__MODULE__{type: :audio}) do
+    {:error, "Audio field is required. Use add_audio/3 to add one."}
   end
 
   def validate(%__MODULE__{type: :video}) do
