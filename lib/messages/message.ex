@@ -19,7 +19,12 @@ defmodule Wax.Messages.Message do
   @typep whatsapp_media_id :: String.t()
 
   @typep message_type ::
-           :contact | :document | :image | :interactive | :location | :template | :text | :video
+           :contact
+           | :interactive
+           | :location
+           | :template
+           | :text
+           | Media.media_type()
 
   @typep whatsapp_id :: String.t()
 
