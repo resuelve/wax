@@ -87,6 +87,40 @@ defmodule Wax.CloudAPI.MessagesTest do
     end
   end
 
+  describe "Video messages" do
+    test "Send an video message", %{bypass: bypass, auth: auth, to: to} do
+      Bypass.expect_once(bypass, "POST", "/#{auth.whatsapp_number_id}/media", fn conn ->
+        response = ~s<{"id": "TEST00000000"}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      {:ok, media_id} =
+        [extname: "mp4"]
+        |> Briefly.create!()
+        |> Media.upload(auth)
+
+      Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+        response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:video)
+
+      message_with_caption = Message.add_video(message, media_id, "Test caption")
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} =
+               Messages.send(message_with_caption, auth)
+
+      message_no_caption = Message.add_video(message, media_id)
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} =
+               Messages.send(message_no_caption, auth)
+    end
+  end
+
   describe "Various errors" do
     test "Sending a message of an unsupported type", %{auth: auth, to: to} do
       message =
