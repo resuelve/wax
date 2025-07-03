@@ -127,7 +127,7 @@ defmodule Wax.Messages.Message do
   """
   @spec add_image(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_image(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption}
+    media = %Media{id: media_id, caption: caption, type: :image}
 
     %{message | image: media}
   end
@@ -139,7 +139,7 @@ defmodule Wax.Messages.Message do
   """
   @spec add_video(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_video(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption}
+    media = %Media{id: media_id, caption: caption, type: :video}
 
     %{message | video: media}
   end
