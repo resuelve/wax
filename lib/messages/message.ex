@@ -19,7 +19,12 @@ defmodule Wax.Messages.Message do
   @typep whatsapp_media_id :: String.t()
 
   @typep message_type ::
-           :contact | :document | :image | :interactive | :location | :template | :text | :video
+           :contact
+           | :interactive
+           | :location
+           | :template
+           | :text
+           | Media.media_type()
 
   @typep whatsapp_id :: String.t()
 
@@ -42,28 +47,18 @@ defmodule Wax.Messages.Message do
           video: Media.t()
         }
 
-  @message_types [:contact, :document, :image, :interactive, :location, :template, :text, :video]
-
-  @fields_to_encode [
+  @message_types [
     :audio,
-    :contacts,
-    :context,
+    :contact,
     :document,
     :image,
     :interactive,
     :location,
-    :messaging_product,
-    :preview_url,
-    :recipient_type,
-    :status,
     :template,
     :text,
-    :to,
-    :type,
     :video
   ]
 
-  @derive {Jason.Encoder, only: @fields_to_encode}
   defstruct audio: nil,
             contacts: [],
             context: nil,
@@ -80,6 +75,26 @@ defmodule Wax.Messages.Message do
             to: nil,
             type: :text,
             video: nil
+
+  defimpl Jason.Encoder do
+    @base_fields [:messaging_product, :recipient_type, :to, :type]
+
+    def encode(value, opts) do
+      fields = @base_fields
+
+      fields =
+        case Map.get(value, :type) do
+          :audio -> [:audio | fields]
+          :image -> [:image | fields]
+          :video -> [:video | fields]
+          _ -> [:text | fields]
+        end
+
+      value
+      |> Map.take(fields)
+      |> Jason.Encode.map(opts)
+    end
+  end
 
   @doc """
     Creates a new Message structure
@@ -106,13 +121,23 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
+  Adds an audio object to the message
+  """
+  @spec add_audio(__MODULE__.t(), whatsapp_media_id()) :: __MODULE__.t()
+  def add_audio(%__MODULE__{} = message, media_id) do
+    media = %Media{id: media_id, type: :audio}
+
+    %{message | audio: media}
+  end
+
+  @doc """
   Adds an image object to the message
 
   Images also accept a text caption that can be added on the same message
   """
   @spec add_image(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_image(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption}
+    media = %Media{id: media_id, caption: caption, type: :image}
 
     %{message | image: media}
   end
@@ -124,7 +149,7 @@ defmodule Wax.Messages.Message do
   """
   @spec add_video(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_video(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption}
+    media = %Media{id: media_id, caption: caption, type: :video}
 
     %{message | video: media}
   end
@@ -162,8 +187,16 @@ defmodule Wax.Messages.Message do
     end
   end
 
+  def validate(%__MODULE__{type: :audio, audio: %Media{id: id}}) when is_binary(id) do
+    :ok
+  end
+
   def validate(%__MODULE__{type: :video, video: %Media{id: id}}) when is_binary(id) do
     :ok
+  end
+
+  def validate(%__MODULE__{type: :audio}) do
+    {:error, "Audio field is required. Use add_audio/3 to add one."}
   end
 
   def validate(%__MODULE__{type: :video}) do
