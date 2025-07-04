@@ -10,10 +10,12 @@ defmodule Wax.Messages.Media do
 
   """
 
+  @type media_id :: String.t()
+
   @type media_type :: :audio | :document | :image | :video
 
   @type t :: %__MODULE__{
-          id: String.t(),
+          id: media_id(),
           caption: String.t(),
           type: media_type()
         }
