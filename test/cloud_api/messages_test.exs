@@ -61,7 +61,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       end)
 
       {:ok, media_id} =
-        [extname: "png"]
+        [extname: ".png"]
         |> Briefly.create!()
         |> Media.upload(auth)
 
@@ -95,7 +95,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       end)
 
       {:ok, media_id} =
-        [extname: "mp4"]
+        [extname: ".mp4"]
         |> Briefly.create!()
         |> Media.upload(auth)
 
@@ -129,7 +129,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       end)
 
       {:ok, media_id} =
-        [extname: "mp3"]
+        [extname: ".mp3"]
         |> Briefly.create!()
         |> Media.upload(auth)
 
@@ -145,6 +145,42 @@ defmodule Wax.CloudAPI.MessagesTest do
         |> Message.add_audio(media_id)
 
       assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+    end
+  end
+
+  describe "Document messages" do
+    test "Send an document message", %{bypass: bypass, auth: auth, to: to} do
+      Bypass.expect_once(bypass, "POST", "/#{auth.whatsapp_number_id}/media", fn conn ->
+        response = ~s<{"id": "TEST00000000"}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      {:ok, media_id} =
+        [extname: ".pdf"]
+        |> Briefly.create!()
+        |> Media.upload(auth)
+
+      Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+        response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:document)
+
+      filename = "test.pdf"
+
+      message_with_caption = Message.add_document(message, media_id, filename, "Test caption")
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} =
+               Messages.send(message_with_caption, auth)
+
+      message_no_caption = Message.add_document(message, media_id, filename)
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} =
+               Messages.send(message_no_caption, auth)
     end
   end
 

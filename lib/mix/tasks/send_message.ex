@@ -23,7 +23,7 @@ defmodule Mix.Tasks.SendMessage do
 
   use Mix.Task
 
-  @media_message_types ~w(audio image video)
+  @media_message_types ~w(audio document image video)
 
   @requirements ["app.start"]
 
@@ -106,6 +106,20 @@ defmodule Mix.Tasks.SendMessage do
     |> Message.set_text("Text message test " <> now)
   end
 
+  defp build_test_message(message, "audio", %{media_id: media_id}) do
+    message
+    |> Message.set_type(:audio)
+    |> Message.add_audio(media_id)
+  end
+
+  defp build_test_message(message, "document", %{media_id: media_id, file_path: file_path}) do
+    filename = Path.basename(file_path)
+
+    message
+    |> Message.set_type(:document)
+    |> Message.add_document(media_id, filename, "This is a document caption")
+  end
+
   defp build_test_message(message, "image", %{media_id: media_id}) do
     message
     |> Message.set_type(:image)
@@ -116,12 +130,6 @@ defmodule Mix.Tasks.SendMessage do
     message
     |> Message.set_type(:video)
     |> Message.add_video(media_id, "This is a video caption")
-  end
-
-  defp build_test_message(message, "audio", %{media_id: media_id}) do
-    message
-    |> Message.set_type(:audio)
-    |> Message.add_audio(media_id)
   end
 
   defp build_test_message(_message, message_type, _params) do
