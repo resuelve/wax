@@ -17,13 +17,15 @@ defmodule Wax.Messages.Media do
   @type t :: %__MODULE__{
           id: media_id(),
           caption: String.t(),
-          type: media_type()
+          type: media_type(),
+          filename: String.t()
         }
 
   defstruct [
     :id,
     :caption,
-    :type
+    :type,
+    :filename
   ]
 
   defimpl Jason.Encoder do
@@ -31,6 +33,7 @@ defmodule Wax.Messages.Media do
       fields =
         case Map.get(value, :type) do
           :audio -> [:id]
+          :document -> [:id, :caption, :filename]
           :image -> [:id, :caption]
           :video -> [:id, :caption]
           _ -> [:id]
