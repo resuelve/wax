@@ -85,6 +85,7 @@ defmodule Wax.Messages.Message do
       fields =
         case Map.get(value, :type) do
           :audio -> [:audio | fields]
+          :document -> [:document | fields]
           :image -> [:image | fields]
           :video -> [:video | fields]
           _ -> [:text | fields]
@@ -128,6 +129,18 @@ defmodule Wax.Messages.Message do
     media = %Media{id: media_id, type: :audio}
 
     %{message | audio: media}
+  end
+
+  @doc """
+  Adds a document object to the message
+  """
+  @spec add_document(__MODULE__.t(), whatsapp_media_id(), String.t(), String.t()) ::
+          __MODULE__.t()
+  def add_document(%__MODULE__{} = message, media_id, filename, caption \\ nil) do
+    # TODO: Media token builder
+    media = %Media{id: media_id, type: :document, filename: filename, caption: caption}
+
+    %{message | document: media}
   end
 
   @doc """
@@ -191,12 +204,24 @@ defmodule Wax.Messages.Message do
     :ok
   end
 
+  def validate(%__MODULE__{type: :document, document: %Media{id: id, filename: filename}})
+      when is_binary(id) do
+    case Path.extname(filename) do
+      "" -> {:error, "Document filename has no extension"}
+      _extension -> :ok
+    end
+  end
+
   def validate(%__MODULE__{type: :video, video: %Media{id: id}}) when is_binary(id) do
     :ok
   end
 
   def validate(%__MODULE__{type: :audio}) do
     {:error, "Audio field is required. Use add_audio/3 to add one."}
+  end
+
+  def validate(%__MODULE__{type: :document}) do
+    {:error, "Document field is required. Use add_document/3 to add one."}
   end
 
   def validate(%__MODULE__{type: :video}) do
