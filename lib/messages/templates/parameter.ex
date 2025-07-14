@@ -1,6 +1,8 @@
 defmodule Wax.Messages.Templates.Parameter do
   @moduledoc """
   Template parameter struct
+
+  TODO: Support for currency and date time parameters
   """
 
   alias Wax.Messages.Media
@@ -9,7 +11,6 @@ defmodule Wax.Messages.Templates.Parameter do
   @type t :: %__MODULE__{
           type: parameter_type(),
           text: String.t(),
-          currency: Currency.t(),
           image: Media.t(),
           document: Media.t(),
           video: Media.t()
@@ -19,8 +20,6 @@ defmodule Wax.Messages.Templates.Parameter do
   defstruct [
     :type,
     :text,
-    :currency,
-    :date_time,
     :image,
     :document,
     :video
@@ -48,6 +47,14 @@ defmodule Wax.Messages.Templates.Parameter do
 
   def parse({:image, %Media{} = image}) do
     %__MODULE__{type: :image, image: image}
+  end
+
+  def parse({:document, %Media{} = image}) do
+    %__MODULE__{type: :document, image: image}
+  end
+
+  def parse({:video, %Media{} = image}) do
+    %__MODULE__{type: :video, image: image}
   end
 
   def parse(param) do
