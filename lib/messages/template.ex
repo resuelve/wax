@@ -98,10 +98,10 @@ defmodule Wax.Messages.Template do
   - text
 
   """
-  @spec add_button(__MODULE__.t(), Keyword.t()) :: __MODULE__.t()
+  @spec add_button(__MODULE__.t(), atom(), index :: 0..9, Keyword.t()) :: __MODULE__.t()
   def add_button(%__MODULE__{} = template, sub_type, index, [_ | _] = params)
       when index in 0..9 do
-    with :ok <- Component.validate_button_params(sub_type, params) |> dbg(),
+    with :ok <- Component.validate_button_params(sub_type, params),
          [%ButtonParameter{} | _] = params = ButtonParameter.parse(params) do
       button = Component.new_button(sub_type, index, params)
       %{template | components: [button | template.components]}
