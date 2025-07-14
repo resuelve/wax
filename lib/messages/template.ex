@@ -8,7 +8,7 @@ defmodule Wax.Messages.Template do
   @type t :: %__MODULE__{
           name: String.t(),
           language: Language.t(),
-          components: [component()]
+          components: [Component.t()]
         }
 
   @derive {Jason.Encoder, only: [:name, :language, :components]}
