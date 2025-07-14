@@ -7,7 +7,7 @@ defmodule Wax.Messages.Templates.Parameter do
 
   alias Wax.Messages.Media
 
-  @typep parameter_type :: :currency | :date_time | :document | :image | :text | :video
+  @typep parameter_type :: :document | :image | :text | :video
   @type t :: %__MODULE__{
           type: parameter_type(),
           text: String.t(),
@@ -16,7 +16,7 @@ defmodule Wax.Messages.Templates.Parameter do
           video: Media.t()
         }
 
-  @derive {Jason.Encoder, only: [:type, :text, :currency, :date_time, :image, :document, :video]}
+  @derive {Jason.Encoder, only: [:type, :text, :image, :document, :video]}
   defstruct [
     :type,
     :text,
