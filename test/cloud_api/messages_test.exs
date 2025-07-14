@@ -2,7 +2,8 @@ defmodule Wax.CloudAPI.MessagesTest do
   use Whatsapp.Case
 
   alias Wax.CloudAPI.{Auth, Media, Messages}
-  alias Wax.Messages.Message
+  alias Wax.Messages.Media, as: MediaManager
+  alias Wax.Messages.{Message, Template}
 
   setup do
     bypass = Bypass.open()
@@ -181,6 +182,60 @@ defmodule Wax.CloudAPI.MessagesTest do
 
       assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} =
                Messages.send(message_no_caption, auth)
+    end
+  end
+
+  describe "Template messages" do
+    test "Sends a template message", %{bypass: bypass, auth: auth, to: to} do
+      Bypass.expect_once(bypass, "POST", "/#{auth.whatsapp_number_id}/media", fn conn ->
+        response = ~s<{"id": "TEST00000000"}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      {:ok, media_id} =
+        [extname: ".png"]
+        |> Briefly.create!()
+        |> Media.upload(auth)
+
+      Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+        response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      template_name = "test_url_and_image"
+      language = "es_MX"
+
+      header_params = [
+        {:image, MediaManager.new_image(media_id)}
+      ]
+
+      body_params = [
+        {:text, "Mr. Test"}
+      ]
+
+      url_button_params = [
+        {:text, "some_url_suffix"}
+      ]
+
+      quick_reply_button_params = [
+        {:payload, "{\"TEST\": \"TESTING\"}"}
+      ]
+
+      template =
+        template_name
+        |> Template.new(language)
+        |> Template.add_header(header_params)
+        |> Template.add_body(body_params)
+        |> Template.add_button(:url, 0, url_button_params)
+        |> Template.add_button(:quick_reply, 1, quick_reply_button_params)
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:template)
+        |> Message.add_template(template)
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
     end
   end
 
