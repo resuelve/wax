@@ -18,8 +18,9 @@ defmodule Mix.Tasks.SendMessage do
   """
   @shortdoc "Echoes arguments"
 
-  alias Wax.CloudAPI.{Auth, Media, Messages}
-  alias Wax.Messages.Message
+  alias Wax.CloudAPI.{Auth, Messages}
+  alias Wax.CloudAPI.Media, as: MediaManager
+  alias Wax.Messages.{Media, Message, Template}
 
   use Mix.Task
 
@@ -32,17 +33,17 @@ defmodule Mix.Tasks.SendMessage do
     run(["text"])
   end
 
-  def run([message_type, file_path | _]) when message_type in @media_message_types do
+  def run([message_type]) when message_type in @media_message_types do
+    Mix.shell().error("Missing file_path parameter.\nEx. mix send_message image test_file.png")
+  end
+
+  def run([message_type, file_path | _]) do
     if File.exists?(file_path) do
       params = %{file_path: file_path}
       do_run(message_type, params)
     else
       Mix.shell().error("File #{file_path} doesn't exist")
     end
-  end
-
-  def run([message_type | _]) when message_type in @media_message_types do
-    Mix.shell().error("Missing file_path parameter.\nEx. mix send_message image test_file.png")
   end
 
   def run([message_type | _]) do
@@ -84,7 +85,7 @@ defmodule Mix.Tasks.SendMessage do
   @spec upload_media_if_required(Auth.t(), map()) ::
           {:ok, map()} | {:error, String.t()}
   defp upload_media_if_required(auth, %{file_path: file_path} = params) do
-    case Media.upload(file_path, auth) do
+    case MediaManager.upload(file_path, auth) do
       {:ok, media_id} ->
         {:ok, Map.put(params, :media_id, media_id)}
 
@@ -124,6 +125,34 @@ defmodule Mix.Tasks.SendMessage do
     message
     |> Message.set_type(:image)
     |> Message.add_image(media_id, "This is a caption")
+  end
+
+  defp build_test_message(message, "template", %{media_id: media_id}) do
+    template_name = "test_url_and_image"
+    language = "es_MX"
+
+    header_params = [
+      {:image, Media.new_image(media_id)}
+    ]
+
+    body_params = [
+      {:text, "Mr. Test"}
+    ]
+
+    button_params = [
+      {:text, "some_url_suffix"}
+    ]
+
+    template =
+      template_name
+      |> Template.new(language)
+      |> Template.add_header(header_params)
+      |> Template.add_body(body_params)
+      |> Template.add_button(:url, 0, button_params)
+
+    message
+    |> Message.set_type(:template)
+    |> Message.add_template(template)
   end
 
   defp build_test_message(message, "video", %{media_id: media_id}) do
