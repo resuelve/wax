@@ -12,6 +12,11 @@ defmodule Mix.Tasks.SendMessage do
 
   An argument for the message type can be sent. Currently supported message types are:
   - text
+  - document
+  - image
+  - interactive
+  - template
+  - video
 
   The default message type is `text`
 
