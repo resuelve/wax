@@ -25,7 +25,7 @@ defmodule Mix.Tasks.SendMessage do
 
   alias Wax.CloudAPI.{Auth, Messages}
   alias Wax.CloudAPI.Media, as: MediaManager
-  alias Wax.Messages.{Media, Message, Template}
+  alias Wax.Messages.{Interactive, Media, Message, Template}
 
   use Mix.Task
 
@@ -130,6 +130,20 @@ defmodule Mix.Tasks.SendMessage do
     message
     |> Message.set_type(:image)
     |> Message.add_image(media_id, "This is a caption")
+  end
+
+  defp build_test_message(message, "interactive", _params) do
+    interactive =
+      :button
+      |> Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_button_action(["First Button", "Second Button"])
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
   end
 
   defp build_test_message(message, "template", %{media_id: media_id}) do
