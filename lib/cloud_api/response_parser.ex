@@ -24,6 +24,15 @@ defmodule Wax.CloudAPI.ResponseParser do
     {:ok, body}
   end
 
+  def parse(
+        %Response{
+          body: %{"error" => %{"code" => error_code, "error_data" => %{"details" => error}}}
+        },
+        _type
+      ) do
+    {:error, "Cloud API Error #{error_code}: #{error}"}
+  end
+
   def parse(%Response{status_code: status_code, body: body}, _type) do
     {:error, "HTTP Error #{status_code}: #{inspect(body)}"}
   end

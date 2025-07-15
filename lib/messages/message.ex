@@ -87,6 +87,7 @@ defmodule Wax.Messages.Message do
           :audio -> [:audio | fields]
           :document -> [:document | fields]
           :image -> [:image | fields]
+          :template -> [:template | fields]
           :video -> [:video | fields]
           _ -> [:text | fields]
         end
@@ -150,9 +151,17 @@ defmodule Wax.Messages.Message do
   """
   @spec add_image(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_image(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption, type: :image}
+    media = Media.new_image(media_id, caption)
 
     %{message | image: media}
+  end
+
+  @doc """
+  Adds a template object to the message
+  """
+  @spec add_template(__MODULE__.t(), Template.t()) :: __MODULE__.t()
+  def add_template(%__MODULE__{} = message, %Template{} = template) do
+    %{message | template: template}
   end
 
   @doc """
@@ -212,6 +221,10 @@ defmodule Wax.Messages.Message do
     end
   end
 
+  def validate(%__MODULE__{type: :template, template: %Template{}}) do
+    :ok
+  end
+
   def validate(%__MODULE__{type: :video, video: %Media{id: id}}) when is_binary(id) do
     :ok
   end
@@ -222,6 +235,10 @@ defmodule Wax.Messages.Message do
 
   def validate(%__MODULE__{type: :document}) do
     {:error, "Document field is required. Use add_document/3 to add one."}
+  end
+
+  def validate(%__MODULE__{type: :template}) do
+    {:error, "Template field is required. Use add_template/2 to add one."}
   end
 
   def validate(%__MODULE__{type: :video}) do

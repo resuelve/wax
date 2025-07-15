@@ -44,4 +44,12 @@ defmodule Wax.Messages.Media do
       |> Jason.Encode.map(opts)
     end
   end
+
+  @doc """
+  Creates a new Media object of Image type
+  """
+  @spec new_image(String.t(), String.t()) :: __MODULE__.t()
+  def new_image(media_id, caption \\ nil) do
+    %__MODULE__{type: :image, id: media_id, caption: caption}
+  end
 end
