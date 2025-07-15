@@ -156,6 +156,10 @@ defmodule Wax.Messages.Message do
     %{message | image: media}
   end
 
+  @doc """
+  Adds a template object to the message
+  """
+  @spec add_template(__MODULE__.t(), Template.t()) :: __MODULE__.t()
   def add_template(%__MODULE__{} = message, %Template{} = template) do
     %{message | template: template}
   end
