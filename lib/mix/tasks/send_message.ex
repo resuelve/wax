@@ -26,6 +26,8 @@ defmodule Mix.Tasks.SendMessage do
   alias Wax.CloudAPI.{Auth, Messages}
   alias Wax.CloudAPI.Media, as: MediaManager
   alias Wax.Messages.{Interactive, Media, Message, Template}
+  alias Wax.Messages.Interactive
+  alias Wax.Messages.Interactive.Section
 
   use Mix.Task
 
@@ -140,6 +142,31 @@ defmodule Mix.Tasks.SendMessage do
       |> Interactive.put_body("BODY")
       |> Interactive.put_footer("This is a footer")
       |> Interactive.put_button_action(["First Button", "Second Button"])
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
+  defp build_test_message(message, "interactive-list", _params) do
+    section_1 =
+      Section.new()
+      |> Section.put_title("Section 1 Title")
+      |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+      |> Section.add_row("row2", "Row 2 title")
+
+    section_2 =
+      Section.new()
+      |> Section.put_title("Section 2 Title")
+      |> Section.add_row("s21", "Testing", "Description")
+
+    interactive =
+      :list
+      |> Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_list_action("A button?", [section_1, section_2])
 
     message
     |> Message.set_type(:interactive)
