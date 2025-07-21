@@ -481,6 +481,58 @@ defmodule Wax.CloudAPI.MessagesTest do
     assert error =~ "Catalog ID"
   end
 
+  test "Send a flow type interactive message", %{bypass: bypass, auth: auth, to: to} do
+    Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+      response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_flow_action("FLOW_CTA", {:id, "TEST01490124"}, %{
+        mode: :draft,
+        flow_token: "TOKENTEST"
+      })
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+  end
+
+  test "Fail to send a flow type message because of missing data", %{
+    auth: auth,
+    to: to
+  } do
+    really_long_button_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_flow_action(really_long_button_text, {:id, "TEST01490124"}, %{
+        mode: :published,
+        flow_token: "TOKENTEST"
+      })
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:error, error} = Messages.send(message, auth)
+
+    assert error =~ "CTA"
+  end
+
   describe "Various errors" do
     test "Sending a message of an unsupported type", %{auth: auth, to: to} do
       message =

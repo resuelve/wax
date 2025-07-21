@@ -63,6 +63,7 @@ defmodule Wax.Messages.Message do
 
   @max_interactive_buttons 3
   @max_length_action_button 20
+  @max_length_cta_button 30
 
   defstruct audio: nil,
             contacts: [],
@@ -292,6 +293,56 @@ defmodule Wax.Messages.Message do
       {_, false} -> {:error, "Invalid Product Retailer ID"}
       _ -> :ok
     end
+  end
+
+  def validate(%__MODULE__{
+        type: :interactive,
+        interactive: %Interactive{
+          type: :flow,
+          action: %Action{name: name, parameters: parameters}
+        }
+      })
+      when is_binary(name) and is_map(parameters) do
+    id_fields = [:flow_name, :flow_id]
+
+    has_some_id? =
+      Enum.any?(id_fields, fn identifier ->
+        case Map.get(parameters, identifier) do
+          identifier when is_binary(identifier) and identifier not in ["", nil] ->
+            true
+
+          _ ->
+            false
+        end
+      end)
+
+    valid_cta? =
+      case String.length(parameters[:flow_cta]) do
+        0 ->
+          false
+
+        total_characters when total_characters > @max_length_cta_button ->
+          false
+
+        _ ->
+          true
+      end
+
+    case {has_some_id?, valid_cta?} do
+      {false, _} -> {:error, "Missing Flow identifier. Requires either a flow_id or flow_name"}
+      {_, false} -> {:error, "Invalid CTA"}
+      _ -> :ok
+    end
+  end
+
+  def validate(%__MODULE__{
+        type: :interactive,
+        interactive: %Interactive{
+          type: :flow,
+          action: %Action{}
+        }
+      }) do
+    {:error, "Invalid Flow action"}
   end
 
   def validate(%__MODULE__{type: :template, template: %Template{}}) do
