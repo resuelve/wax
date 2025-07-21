@@ -4,6 +4,7 @@ defmodule Wax.CloudAPI.MessagesTest do
   alias Wax.CloudAPI.{Auth, Media, Messages}
   alias Wax.Messages.Media, as: MediaManager
   alias Wax.Messages.{Interactive, Message, Template}
+  alias Wax.Messages.Interactive.Section
 
   setup do
     bypass = Bypass.open()
@@ -282,6 +283,157 @@ defmodule Wax.CloudAPI.MessagesTest do
       assert {:error, error} = Messages.send(message, auth)
 
       assert error =~ "more than 3 buttons"
+    end
+
+    test "Send a list type interactive message", %{bypass: bypass, auth: auth, to: to} do
+      Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+        response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      section_1 =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+        |> Section.add_row("row2", "Row 2 title")
+
+      section_2 =
+        Section.new()
+        |> Section.put_title("Section 2 Title")
+        |> Section.add_row("s21", "Testing", "Description")
+
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_list_action("A button?", [section_1, section_2])
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+    end
+
+    test "Fail to send a list type message because the button text is too long", %{
+      auth: auth,
+      to: to
+    } do
+      section =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+        |> Section.add_row("row2", "Row 2 title")
+
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_list_action(
+          "THIS IS A VERY LOOOOOOOOONG TEXT AND CANNOT BE SENT ):",
+          [section]
+        )
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:error, error} = Messages.send(message, auth)
+
+      assert error =~ "more than 20 characters"
+    end
+
+    test "Fail to send a list type message because a section has many rows", %{
+      auth: auth,
+      to: to
+    } do
+      section =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+        |> Section.add_row("row2", "Row 2 title")
+
+      section_2 =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_list_action("BUTTON", [section, section_2])
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:error, error} = Messages.send(message, auth)
+
+      assert error =~ "more than 10 rows"
+    end
+
+    test "Fail to send a list message because a section row has invalid data", %{
+      auth: auth,
+      to: to
+    } do
+      # Missing Row ID
+      section =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+        |> Section.add_row("", "Row 2 title")
+
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_list_action("Button", [section])
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:error, error} = Messages.send(message, auth)
+
+      assert error =~ "Row ID"
+
+      really_long_title = "Lorem ipsum dolor sit amet, consectetur!"
+
+      section =
+        Section.new()
+        |> Section.put_title("Section 1 Title")
+        |> Section.add_row("row1", really_long_title, "This is a row with a description")
+
+      # Too long of a title
+      interactive = Interactive.put_list_action(interactive, "Button", [section])
+      message = Message.add_interactive(message, interactive)
+
+      assert {:error, error} = Messages.send(message, auth)
+
+      assert error =~ "Row title cannot be longer"
     end
   end
 
