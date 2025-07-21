@@ -12,14 +12,8 @@ defmodule Wax.Messages.Interactive.Action do
           catalog_id: String.t(),
           product_retailer_id: String.t(),
           sections: [Section.t()],
-          flow_message_version: 3,
-          flow_id: String.t(),
-          flow_name: String.t(),
-          flow_cta: String.t(),
-          mode: String.t(),
-          flow_token: String.t(),
-          flow_action: String.t(),
-          flow_action_payload: String.t()
+          name: String.t(),
+          parameters: String.t()
         }
 
   defstruct [
@@ -29,14 +23,8 @@ defmodule Wax.Messages.Interactive.Action do
     :catalog_id,
     :product_retailer_id,
     :sections,
-    {:flow_message_version, 3},
-    :flow_id,
-    :flow_name,
-    :flow_cta,
-    :mode,
-    :flow_token,
-    :flow_action,
-    :flow_action_payload
+    :name,
+    :parameters
   ]
 
   defimpl Jason.Encoder do
@@ -56,16 +44,7 @@ defmodule Wax.Messages.Interactive.Action do
             [:catalog_id, :product_retailer_id, :sections]
 
           :flow ->
-            [
-              :flow_message_version,
-              :flow_id,
-              :flow_name,
-              :flow_cta,
-              :mode,
-              :flow_token,
-              :flow_action,
-              :flow_action_payload
-            ]
+            [:name, :parameters]
         end
 
       value
