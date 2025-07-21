@@ -437,6 +437,50 @@ defmodule Wax.CloudAPI.MessagesTest do
     end
   end
 
+  test "Send a product type interactive message", %{bypass: bypass, auth: auth, to: to} do
+    Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+      response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_product_action("PRODUCT_ID", "PRODUCT_RETAILER_ID")
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+  end
+
+  test "Fail to send a product type message because of missing data", %{
+    auth: auth,
+    to: to
+  } do
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_product_action("", "PRODUCT_RETAILER_ID")
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:error, error} = Messages.send(message, auth)
+
+    assert error =~ "Catalog ID"
+  end
+
   describe "Various errors" do
     test "Sending a message of an unsupported type", %{auth: auth, to: to} do
       message =

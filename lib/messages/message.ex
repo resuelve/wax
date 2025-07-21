@@ -275,6 +275,25 @@ defmodule Wax.Messages.Message do
     end
   end
 
+  def validate(%__MODULE__{
+        type: :interactive,
+        interactive: %Interactive{
+          type: :product,
+          action: %Action{catalog_id: catalog_id, product_retailer_id: product_retailer_id}
+        }
+      }) do
+    valid_catalog_id? = is_binary(catalog_id) && catalog_id not in ["", nil]
+
+    valid_product_retailer_id? =
+      is_binary(product_retailer_id) && product_retailer_id not in ["", nil]
+
+    case {valid_catalog_id?, valid_product_retailer_id?} do
+      {false, _} -> {:error, "Invalid Catalog ID"}
+      {_, false} -> {:error, "Invalid Product Retailer ID"}
+      _ -> :ok
+    end
+  end
+
   def validate(%__MODULE__{type: :template, template: %Template{}}) do
     :ok
   end
