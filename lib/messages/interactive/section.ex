@@ -3,6 +3,8 @@ defmodule Wax.Messages.Interactive.Section do
   Interactive Actions sections struct
   """
 
+  alias Wax.Messages.Interactive.Section.Row
+
   @type t :: %__MODULE__{
           product_items: [map()],
           rows: [map()],
@@ -44,16 +46,33 @@ defmodule Wax.Messages.Interactive.Section do
   """
   @spec add_row(__MODULE__.t(), String.t(), String.t(), String.t()) :: __MODULE__.t()
   def add_row(%__MODULE__{rows: rows} = section, row_id, row_title, row_description \\ nil) do
-    if Enum.count(rows) >= @max_rows do
-      raise "A Section cannot have more than 10 rows"
-    end
-
-    row = %{
+    row = %Row{
       id: row_id,
       title: row_title,
       description: row_description
     }
 
     %{section | rows: [row | rows]}
+  end
+
+  @doc """
+  Validates that the Section struct follows the Cloud API requirements
+  """
+  @spec validate(__MODULE__.t()) :: :ok | {:error, String.t()}
+  def validate(%__MODULE__{rows: rows}) when length(rows) > @max_rows do
+    {:error, "A Section cannot have more than 10 rows"}
+  end
+
+  def validate(%__MODULE__{rows: rows}) do
+    rows
+    |> Enum.map(&Row.validate/1)
+    |> Enum.find(fn
+      :ok -> false
+      {:error, _} -> true
+    end)
+    |> case do
+      nil -> :ok
+      {:error, error} -> {:error, error}
+    end
   end
 end

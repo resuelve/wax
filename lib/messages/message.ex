@@ -16,7 +16,7 @@ defmodule Wax.Messages.Message do
     Text
   }
 
-  alias Wax.Messages.Interactive.Action
+  alias Wax.Messages.Interactive.{Action, Section}
 
   @typep whatsapp_media_id :: String.t()
 
@@ -60,6 +60,9 @@ defmodule Wax.Messages.Message do
     :text,
     :video
   ]
+
+  @max_interactive_buttons 3
+  @max_length_action_button 20
 
   defstruct audio: nil,
             contacts: [],
@@ -191,6 +194,9 @@ defmodule Wax.Messages.Message do
   Validates a message
 
   Checks if a message is valid to be sent to the Cloud API
+
+  #TODO: Move this functionality to its own module
+
   """
   @spec validate(__MODULE__.t()) :: :ok | {:error, String.t()}
   def validate(%__MODULE__{to: to}) when to in ["", nil] do
@@ -236,10 +242,36 @@ defmodule Wax.Messages.Message do
         type: :interactive,
         interactive: %Interactive{type: :button, action: %Action{buttons: buttons}}
       }) do
-    if length(buttons) <= 3 do
+    if length(buttons) <= @max_interactive_buttons do
       :ok
     else
-      {:error, "An interactive button type message cannot have more than 3 buttons"}
+      {:error,
+       "An interactive button type message cannot have more than #{@max_interactive_buttons} buttons"}
+    end
+  end
+
+  def validate(%__MODULE__{
+        type: :interactive,
+        interactive: %Interactive{type: :list, action: %Action{} = action}
+      }) do
+    case String.length(action.button) do
+      0 ->
+        {:error, "The button text is required for list messages"}
+
+      total_characters when total_characters > @max_length_action_button ->
+        {:error, "A list button cannot have more than #{@max_length_action_button} characters"}
+
+      _ ->
+        action.sections
+        |> Enum.map(&Section.validate/1)
+        |> Enum.find(fn
+          :ok -> false
+          {:error, _} -> true
+        end)
+        |> case do
+          nil -> :ok
+          {:error, error} -> {:error, error}
+        end
     end
   end
 
