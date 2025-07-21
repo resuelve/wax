@@ -173,6 +173,19 @@ defmodule Mix.Tasks.SendMessage do
     |> Message.add_interactive(interactive)
   end
 
+  defp build_test_message(message, "interactive-product", _params) do
+    interactive =
+      :product
+      |> Interactive.new()
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_product_action("PRODUCT_ID", "bravo")
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
   defp build_test_message(message, "template", %{media_id: media_id}) do
     template_name = "test_url_and_image"
     language = "es_MX"
