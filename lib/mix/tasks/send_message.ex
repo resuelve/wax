@@ -185,6 +185,21 @@ defmodule Mix.Tasks.SendMessage do
     |> Message.add_interactive(interactive)
   end
 
+  defp build_test_message(message, "interactive-flow", _params) do
+    # You have to have a Flow created on the Whatsapp Bussiness side
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_flow_action("CTA Button", {:name, "some-flow"})
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
   defp build_test_message(message, "template", %{media_id: media_id}) do
     template_name = "test_url_and_image"
     language = "es_MX"
