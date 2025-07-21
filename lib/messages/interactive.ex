@@ -79,6 +79,8 @@ defmodule Wax.Messages.Interactive do
   The `buttons` argument is expected to be a list of strings where each element
   will be the title (content) of the button.
 
+  A max of 3 buttons can be sent.
+
   """
   @spec put_button_action(__MODULE__.t(), [button_title :: String.t()]) :: __MODULE__.t()
   def put_button_action(%__MODULE__{} = interactive, [_ | _] = buttons) do

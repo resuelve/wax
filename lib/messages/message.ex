@@ -16,6 +16,8 @@ defmodule Wax.Messages.Message do
     Text
   }
 
+  alias Wax.Messages.Interactive.Action
+
   @typep whatsapp_media_id :: String.t()
 
   @typep message_type ::
@@ -230,8 +232,15 @@ defmodule Wax.Messages.Message do
     end
   end
 
-  def validate(%__MODULE__{type: :interactive, interactive: %Interactive{}}) do
-    :ok
+  def validate(%__MODULE__{
+        type: :interactive,
+        interactive: %Interactive{type: :button, action: %Action{buttons: buttons}}
+      }) do
+    if length(buttons) <= 3 do
+      :ok
+    else
+      {:error, "An interactive button type message cannot have more than 3 buttons"}
+    end
   end
 
   def validate(%__MODULE__{type: :template, template: %Template{}}) do
@@ -252,6 +261,10 @@ defmodule Wax.Messages.Message do
 
   def validate(%__MODULE__{type: :interactive}) do
     {:error, "Interactive field is required. Use add_interactive/2 to add one."}
+  end
+
+  def validate(%__MODULE__{type: :interactive, interactive: %Interactive{}}) do
+    {:error, "Interactive messages should have an action object"}
   end
 
   def validate(%__MODULE__{type: :template}) do
