@@ -115,8 +115,10 @@ defmodule Wax.Messages.Interactive do
 
   """
   @spec put_product_action(__MODULE__.t(), String.t(), String.t()) :: __MODULE__.t()
-  def put_product_action(%__MODULE__{} = interactive, catalog_id, product_retailer_id) do
+  def put_product_action(%__MODULE__{} = interactive, catalog_id, product_retailer_id)
+      when is_binary(catalog_id) and is_binary(product_retailer_id) do
     action = %Action{
+      interactive_type: :product,
       catalog_id: catalog_id,
       product_retailer_id: product_retailer_id
     }
