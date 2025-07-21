@@ -8,7 +8,7 @@ defmodule Wax.Messages.Interactive do
   of documentation on the Cloud API site. They can be added in the future.
   """
 
-  alias Wax.Messages.Interactive.{Action, Header}
+  alias Wax.Messages.Interactive.{Action, Header, Section}
 
   @type type :: :button | :list | :product | :product_list | :flow
 
@@ -73,7 +73,7 @@ defmodule Wax.Messages.Interactive do
   @doc """
   Adds a list of buttons to the Interactive message
 
-  The `buttons` paramater is expected to be a list of strings where each element
+  The `buttons` argument is expected to be a list of strings where each element
   will be the title (content) of the button.
 
   """
@@ -87,6 +87,19 @@ defmodule Wax.Messages.Interactive do
       end)
 
     action = %Action{interactive_type: interactive.type, buttons: buttons}
+    %{interactive | action: action}
+  end
+
+  @doc """
+  Adds a list to the Interactive message
+
+  The `sections` argument requires a list of %Section{} structs that can be constructed
+  using the Wax.Messages.Interactive.Section module
+
+  """
+  def put_list_action(%__MODULE__{} = interactive, button_text, [%Section{} | _] = sections) do
+    action = %Action{interactive_type: interactive.type, button: button_text, sections: sections}
+
     %{interactive | action: action}
   end
 end

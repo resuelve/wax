@@ -44,10 +44,10 @@ defmodule Wax.Messages.Interactive.Action do
       fields =
         case Map.get(value, :interactive_type) do
           :button ->
-            [:button, :buttons]
+            [:buttons]
 
           :list ->
-            [:sections]
+            [:button, :sections]
 
           :product ->
             [:catalog_id, :product_retailer_id]
