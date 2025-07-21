@@ -15,6 +15,7 @@ defmodule Wax.Messages.Interactive.Section.Row do
   @max_title_length 24
   @max_description_length 72
 
+  @derive Jason.Encoder
   @enforce_keys [:id, :title]
   defstruct [
     :id,
@@ -48,7 +49,7 @@ defmodule Wax.Messages.Interactive.Section.Row do
       String.length(title) > @max_title_length ->
         {:error, "Row title cannot be longer than #{@max_title_length} characters"}
 
-      String.length(description) > @max_description_length ->
+      is_binary(description) and String.length(description) > @max_description_length ->
         {:error, "Row description cannot be longer than #{@max_title_length} characters"}
 
       true ->
