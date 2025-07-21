@@ -102,4 +102,21 @@ defmodule Wax.Messages.Interactive do
 
     %{interactive | action: action}
   end
+
+  @doc """
+  Adds a product to the Interactive message
+
+  The product ID has to be a valid ID from your catalog only containing digits.
+
+  """
+  @spec put_product_action(__MODULE__.t(), String.t(), String.t()) :: __MODULE__.t()
+  def put_product_action(%__MODULE__{} = interactive, catalog_id, product_retailer_id) do
+    action = %Action{
+      interactive_type: interactive.type,
+      catalog_id: catalog_id,
+      product_retailer_id: product_retailer_id
+    }
+
+    %{interactive | action: action}
+  end
 end
