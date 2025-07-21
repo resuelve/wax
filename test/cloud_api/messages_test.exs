@@ -3,7 +3,7 @@ defmodule Wax.CloudAPI.MessagesTest do
 
   alias Wax.CloudAPI.{Auth, Media, Messages}
   alias Wax.Messages.Media, as: MediaManager
-  alias Wax.Messages.{Message, Template}
+  alias Wax.Messages.{Interactive, Message, Template}
 
   setup do
     bypass = Bypass.open()
@@ -236,6 +236,52 @@ defmodule Wax.CloudAPI.MessagesTest do
         |> Message.add_template(template)
 
       assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+    end
+  end
+
+  describe "Interactive messages" do
+    test "Send a button type interactive message", %{bypass: bypass, auth: auth, to: to} do
+      Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+        response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+        Plug.Conn.resp(conn, 200, response)
+      end)
+
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_button_action(["First Button", "Second Button"])
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+    end
+
+    test "Fail to send a button type message because it has more than 3 buttons", %{
+      auth: auth,
+      to: to
+    } do
+      interactive =
+        Interactive.new()
+        |> Interactive.put_header(:text, "Header", "Subtexto")
+        |> Interactive.put_body("BODY")
+        |> Interactive.put_footer("This is a footer")
+        |> Interactive.put_button_action(["1", "2", "3", "4"])
+
+      message =
+        to
+        |> Message.new()
+        |> Message.set_type(:interactive)
+        |> Message.add_interactive(interactive)
+
+      assert {:error, error} = Messages.send(message, auth)
+
+      assert error =~ "more than 3 buttons"
     end
   end
 
