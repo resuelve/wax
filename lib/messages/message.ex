@@ -16,8 +16,6 @@ defmodule Wax.Messages.Message do
     Text
   }
 
-  alias Wax.Messages.Interactive.{Action, Section}
-
   @typep whatsapp_media_id :: String.t()
 
   @typep message_type ::
@@ -60,10 +58,6 @@ defmodule Wax.Messages.Message do
     :text,
     :video
   ]
-
-  @max_interactive_buttons 3
-  @max_length_action_button 20
-  @max_length_cta_button 30
 
   defstruct audio: nil,
             contacts: [],
@@ -239,110 +233,8 @@ defmodule Wax.Messages.Message do
     end
   end
 
-  def validate(%__MODULE__{
-        type: :interactive,
-        interactive: %Interactive{type: :button, action: %Action{buttons: buttons}}
-      }) do
-    if length(buttons) <= @max_interactive_buttons do
-      :ok
-    else
-      {:error,
-       "An interactive button type message cannot have more than #{@max_interactive_buttons} buttons"}
-    end
-  end
-
-  def validate(%__MODULE__{
-        type: :interactive,
-        interactive: %Interactive{type: :list, action: %Action{} = action}
-      }) do
-    case String.length(action.button) do
-      0 ->
-        {:error, "The button text is required for list messages"}
-
-      total_characters when total_characters > @max_length_action_button ->
-        {:error, "A list button cannot have more than #{@max_length_action_button} characters"}
-
-      _ ->
-        action.sections
-        |> Enum.map(&Section.validate/1)
-        |> Enum.find(fn
-          :ok -> false
-          {:error, _} -> true
-        end)
-        |> case do
-          nil -> :ok
-          {:error, error} -> {:error, error}
-        end
-    end
-  end
-
-  def validate(%__MODULE__{
-        type: :interactive,
-        interactive: %Interactive{
-          type: :product,
-          action: %Action{catalog_id: catalog_id, product_retailer_id: product_retailer_id}
-        }
-      }) do
-    valid_catalog_id? = is_binary(catalog_id) && catalog_id not in ["", nil]
-
-    valid_product_retailer_id? =
-      is_binary(product_retailer_id) && product_retailer_id not in ["", nil]
-
-    case {valid_catalog_id?, valid_product_retailer_id?} do
-      {false, _} -> {:error, "Invalid Catalog ID"}
-      {_, false} -> {:error, "Invalid Product Retailer ID"}
-      _ -> :ok
-    end
-  end
-
-  def validate(%__MODULE__{
-        type: :interactive,
-        interactive: %Interactive{
-          type: :flow,
-          action: %Action{name: name, parameters: parameters}
-        }
-      })
-      when is_binary(name) and is_map(parameters) do
-    id_fields = [:flow_name, :flow_id]
-
-    has_some_id? =
-      Enum.any?(id_fields, fn identifier ->
-        case Map.get(parameters, identifier) do
-          identifier when is_binary(identifier) and identifier not in ["", nil] ->
-            true
-
-          _ ->
-            false
-        end
-      end)
-
-    valid_cta? =
-      case String.length(parameters[:flow_cta]) do
-        0 ->
-          false
-
-        total_characters when total_characters > @max_length_cta_button ->
-          false
-
-        _ ->
-          true
-      end
-
-    case {has_some_id?, valid_cta?} do
-      {false, _} -> {:error, "Missing Flow identifier. Requires either a flow_id or flow_name"}
-      {_, false} -> {:error, "Invalid CTA"}
-      _ -> :ok
-    end
-  end
-
-  def validate(%__MODULE__{
-        type: :interactive,
-        interactive: %Interactive{
-          type: :flow,
-          action: %Action{}
-        }
-      }) do
-    {:error, "Invalid Flow action"}
+  def validate(%__MODULE__{type: :interactive, interactive: %Interactive{} = interactive}) do
+    Interactive.validate(interactive)
   end
 
   def validate(%__MODULE__{type: :template, template: %Template{}}) do
@@ -363,10 +255,6 @@ defmodule Wax.Messages.Message do
 
   def validate(%__MODULE__{type: :interactive}) do
     {:error, "Interactive field is required. Use add_interactive/2 to add one."}
-  end
-
-  def validate(%__MODULE__{type: :interactive, interactive: %Interactive{}}) do
-    {:error, "Interactive messages should have an action object"}
   end
 
   def validate(%__MODULE__{type: :template}) do

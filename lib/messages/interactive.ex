@@ -25,6 +25,12 @@ defmodule Wax.Messages.Interactive do
 
   @optional_flow_params [:mode, :flow_token, :flow_action, :flow_action_payload]
 
+  @max_interactive_buttons 3
+  @max_length_action_button 20
+  @max_length_cta_button 30
+  @max_body_chars 1024
+  @max_footer_chars 60
+
   @derive Jason.Encoder
   defstruct [
     :action,
@@ -65,6 +71,9 @@ defmodule Wax.Messages.Interactive do
 
   @doc """
   Sets the footer of the Interactive message
+
+  The footer content cannot be more than 60 characters
+
   """
   @spec put_footer(__MODULE__.t(), String.t()) :: __MODULE__.t()
   def put_footer(%__MODULE__{} = interactive, content) when is_binary(content) do
@@ -221,5 +230,146 @@ defmodule Wax.Messages.Interactive do
       |> Map.merge(parameters)
 
     %{action | parameters: updated_parameters}
+  end
+
+  @doc """
+  Validates an Interactive struct
+  """
+  @spec validate(__MODULE__.t()) :: :ok | {:error, String.t()}
+  def validate(%__MODULE__{body: body, footer: footer} = interactive) do
+    valid_body? =
+      case {interactive.type, body} do
+        {:product, %{text: text}} ->
+          is_binary(text) and String.length(text) < @max_body_chars
+
+        {:product, _} ->
+          true
+
+        {_, %{text: text}} ->
+          body_size = (is_binary(text) && String.length(text)) || 0
+          body_size > 0 and body_size < @max_body_chars
+
+        _ ->
+          false
+      end
+
+    valid_footer? =
+      case footer do
+        %{text: footer_text} ->
+          footer_size = (is_binary(footer_text) && String.length(footer_text)) || 0
+          footer_size > 0 and footer_size < @max_body_chars
+
+        nil ->
+          true
+      end
+
+    case {valid_body?, valid_footer?} do
+      {false, _} ->
+        "Invalid body content size. This field is required and cannot be longer than #{@max_body_chars}"
+
+      {_, false} ->
+        "Invalid footer content size. This field is required and cannot be longer than #{@max_footer_chars}"
+
+      _ ->
+        do_validate(interactive)
+    end
+  end
+
+  @spec do_validate(__MODULE__.t()) :: :ok | {:error, String.t()}
+  defp do_validate(%__MODULE__{type: :button, action: %Action{buttons: buttons}}) do
+    if length(buttons) <= @max_interactive_buttons do
+      :ok
+    else
+      error =
+        "An interactive button type message cannot have more than #{@max_interactive_buttons} buttons"
+
+      {:error, error}
+    end
+  end
+
+  defp do_validate(%__MODULE__{type: :list, action: %Action{} = action}) do
+    case String.length(action.button) do
+      0 ->
+        {:error, "The button text is required for list messages"}
+
+      total_characters when total_characters > @max_length_action_button ->
+        {:error, "A list button cannot have more than #{@max_length_action_button} characters"}
+
+      _ ->
+        action.sections
+        |> Enum.map(&Section.validate/1)
+        |> Enum.find(fn
+          :ok -> false
+          {:error, _} -> true
+        end)
+        |> case do
+          nil -> :ok
+          {:error, error} -> {:error, error}
+        end
+    end
+  end
+
+  defp do_validate(%__MODULE__{
+         type: :product,
+         action: %Action{catalog_id: catalog_id, product_retailer_id: product_retailer_id}
+       }) do
+    valid_catalog_id? = is_binary(catalog_id) && catalog_id not in ["", nil]
+
+    valid_product_retailer_id? =
+      is_binary(product_retailer_id) && product_retailer_id not in ["", nil]
+
+    case {valid_catalog_id?, valid_product_retailer_id?} do
+      {false, _} -> {:error, "Invalid Catalog ID"}
+      {_, false} -> {:error, "Invalid Product Retailer ID"}
+      _ -> :ok
+    end
+  end
+
+  defp do_validate(%__MODULE__{
+         type: :flow,
+         action: %Action{name: name, parameters: parameters}
+       })
+       when is_binary(name) and is_map(parameters) do
+    id_fields = [:flow_name, :flow_id]
+
+    has_some_id? =
+      Enum.any?(id_fields, fn identifier ->
+        case Map.get(parameters, identifier) do
+          identifier when is_binary(identifier) and identifier not in ["", nil] ->
+            true
+
+          _ ->
+            false
+        end
+      end)
+
+    valid_cta? =
+      case String.length(parameters[:flow_cta]) do
+        0 ->
+          false
+
+        total_characters when total_characters > @max_length_cta_button ->
+          false
+
+        _ ->
+          true
+      end
+
+    case {has_some_id?, valid_cta?} do
+      {false, _} -> {:error, "Missing Flow identifier. Requires either a flow_id or flow_name"}
+      {_, false} -> {:error, "Invalid CTA"}
+      _ -> :ok
+    end
+  end
+
+  defp do_validate(%__MODULE__{
+         type: :flow,
+         action: %Action{}
+       }) do
+    {:error, "Invalid Flow action"}
+  end
+
+  defp do_validate(%__MODULE__{action: _action}) do
+    {:error, "Interactive messages should have an action object"}
   end
 end
