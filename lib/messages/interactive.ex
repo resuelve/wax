@@ -6,6 +6,9 @@ defmodule Wax.Messages.Interactive do
 
   Interactive messages of type `catalog_message` is not supported for lack
   of documentation on the Cloud API site. They can be added in the future.
+
+  TODO: Implement multi-product interactive messages
+
   """
 
   alias Wax.Messages.Interactive.{Action, Header, Section}
@@ -34,9 +37,9 @@ defmodule Wax.Messages.Interactive do
   @doc """
   Creates a new interactive object
   """
-  @spec new(type()) :: __MODULE__.t()
-  def new(type) when type in @interactive_types do
-    %__MODULE__{type: type}
+  @spec new() :: __MODULE__.t()
+  def new() do
+    %__MODULE__{}
   end
 
   @doc """
@@ -86,8 +89,8 @@ defmodule Wax.Messages.Interactive do
         %{type: :reply, reply: %{title: button_title, id: index}}
       end)
 
-    action = %Action{interactive_type: interactive.type, buttons: buttons}
-    %{interactive | action: action}
+    action = %Action{interactive_type: :button, buttons: buttons}
+    %{interactive | type: :button, action: action}
   end
 
   @doc """
@@ -98,9 +101,9 @@ defmodule Wax.Messages.Interactive do
 
   """
   def put_list_action(%__MODULE__{} = interactive, button_text, [%Section{} | _] = sections) do
-    action = %Action{interactive_type: interactive.type, button: button_text, sections: sections}
+    action = %Action{interactive_type: :list, button: button_text, sections: sections}
 
-    %{interactive | action: action}
+    %{interactive | type: :list, action: action}
   end
 
   @doc """
@@ -112,11 +115,13 @@ defmodule Wax.Messages.Interactive do
   @spec put_product_action(__MODULE__.t(), String.t(), String.t()) :: __MODULE__.t()
   def put_product_action(%__MODULE__{} = interactive, catalog_id, product_retailer_id) do
     action = %Action{
-      interactive_type: interactive.type,
+      interactive_type: :product,
       catalog_id: catalog_id,
       product_retailer_id: product_retailer_id
     }
 
+    %{interactive | type: :product, action: action}
+  end
     %{interactive | action: action}
   end
 end

@@ -136,8 +136,7 @@ defmodule Mix.Tasks.SendMessage do
 
   defp build_test_message(message, "interactive", _params) do
     interactive =
-      :button
-      |> Interactive.new()
+      Interactive.new()
       |> Interactive.put_header(:text, "Header", "Subtexto")
       |> Interactive.put_body("BODY")
       |> Interactive.put_footer("This is a footer")
@@ -161,8 +160,7 @@ defmodule Mix.Tasks.SendMessage do
       |> Section.add_row("s21", "Testing", "Description")
 
     interactive =
-      :list
-      |> Interactive.new()
+      Interactive.new()
       |> Interactive.put_header(:text, "Header", "Subtexto")
       |> Interactive.put_body("BODY")
       |> Interactive.put_footer("This is a footer")
@@ -174,9 +172,10 @@ defmodule Mix.Tasks.SendMessage do
   end
 
   defp build_test_message(message, "interactive-product", _params) do
+    # You have to have a Catalog with products made on the Whatsapp Bussiness side
+
     interactive =
-      :product
-      |> Interactive.new()
+      Interactive.new()
       |> Interactive.put_body("BODY")
       |> Interactive.put_footer("This is a footer")
       |> Interactive.put_product_action("PRODUCT_ID", "bravo")
