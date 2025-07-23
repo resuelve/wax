@@ -12,6 +12,11 @@ defmodule Mix.Tasks.SendMessage do
 
   An argument for the message type can be sent. Currently supported message types are:
   - text
+  - document
+  - image
+  - interactive
+  - template
+  - video
 
   The default message type is `text`
 
@@ -20,7 +25,9 @@ defmodule Mix.Tasks.SendMessage do
 
   alias Wax.CloudAPI.{Auth, Messages}
   alias Wax.CloudAPI.Media, as: MediaManager
-  alias Wax.Messages.{Media, Message, Template}
+  alias Wax.Messages.{Interactive, Media, Message, Template}
+  alias Wax.Messages.Interactive
+  alias Wax.Messages.Interactive.Section
 
   use Mix.Task
 
@@ -125,6 +132,72 @@ defmodule Mix.Tasks.SendMessage do
     message
     |> Message.set_type(:image)
     |> Message.add_image(media_id, "This is a caption")
+  end
+
+  defp build_test_message(message, "interactive", _params) do
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_button_action(["First Button", "Second Button"])
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
+  defp build_test_message(message, "interactive-list", _params) do
+    section_1 =
+      Section.new()
+      |> Section.put_title("Section 1 Title")
+      |> Section.add_row("row1", "Row 1 title", "This is a row with a description")
+      |> Section.add_row("row2", "Row 2 title")
+
+    section_2 =
+      Section.new()
+      |> Section.put_title("Section 2 Title")
+      |> Section.add_row("s21", "Testing", "Description")
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_list_action("A button?", [section_1, section_2])
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
+  defp build_test_message(message, "interactive-product", _params) do
+    # You have to have a Catalog with products made on the Whatsapp Bussiness side
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_product_action("PRODUCT_ID", "bravo")
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
+  defp build_test_message(message, "interactive-flow", _params) do
+    # You have to have a Flow created on the Whatsapp Bussiness side
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_flow_action("CTA Button", {:name, "some-flow"})
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
   end
 
   defp build_test_message(message, "template", %{media_id: media_id}) do

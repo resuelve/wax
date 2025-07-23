@@ -87,6 +87,7 @@ defmodule Wax.Messages.Message do
           :audio -> [:audio | fields]
           :document -> [:document | fields]
           :image -> [:image | fields]
+          :interactive -> [:interactive | fields]
           :template -> [:template | fields]
           :video -> [:video | fields]
           _ -> [:text | fields]
@@ -157,6 +158,14 @@ defmodule Wax.Messages.Message do
   end
 
   @doc """
+  Adds an interactive object to the message
+  """
+  @spec add_interactive(__MODULE__.t(), Interactive.t()) :: __MODULE__.t()
+  def add_interactive(%__MODULE__{} = message, %Interactive{} = interactive) do
+    %{message | interactive: interactive}
+  end
+
+  @doc """
   Adds a template object to the message
   """
   @spec add_template(__MODULE__.t(), Template.t()) :: __MODULE__.t()
@@ -180,6 +189,9 @@ defmodule Wax.Messages.Message do
   Validates a message
 
   Checks if a message is valid to be sent to the Cloud API
+
+  #TODO: Move this functionality to its own module
+
   """
   @spec validate(__MODULE__.t()) :: :ok | {:error, String.t()}
   def validate(%__MODULE__{to: to}) when to in ["", nil] do
@@ -221,6 +233,10 @@ defmodule Wax.Messages.Message do
     end
   end
 
+  def validate(%__MODULE__{type: :interactive, interactive: %Interactive{} = interactive}) do
+    Interactive.validate(interactive)
+  end
+
   def validate(%__MODULE__{type: :template, template: %Template{}}) do
     :ok
   end
@@ -235,6 +251,10 @@ defmodule Wax.Messages.Message do
 
   def validate(%__MODULE__{type: :document}) do
     {:error, "Document field is required. Use add_document/3 to add one."}
+  end
+
+  def validate(%__MODULE__{type: :interactive}) do
+    {:error, "Interactive field is required. Use add_interactive/2 to add one."}
   end
 
   def validate(%__MODULE__{type: :template}) do
