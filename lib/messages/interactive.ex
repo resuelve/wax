@@ -30,6 +30,7 @@ defmodule Wax.Messages.Interactive do
   @max_length_cta_button 30
   @max_body_chars 1024
   @max_footer_chars 60
+  @max_sections 10
 
   @derive Jason.Encoder
   defstruct [
@@ -288,11 +289,20 @@ defmodule Wax.Messages.Interactive do
   end
 
   defp do_validate(%__MODULE__{type: :list, action: %Action{} = action}) do
-    case String.length(action.button) do
-      0 ->
+    button_text_length = String.length(action.button)
+    total_sections = Enum.count(action.sections)
+
+    case {button_text_length, total_sections} do
+      {0, _} ->
         {:error, "The button text is required for list messages"}
 
-      total_characters when total_characters > @max_length_action_button ->
+      {_, 0} ->
+        {:error, "At least one section is required for list messages"}
+
+      {_, total_sections} when total_sections > @max_sections ->
+        {:error, "A list message cannot have more than #{@max_sections} sections"}
+
+      {button_total_characters, _} when button_total_characters > @max_length_action_button ->
         {:error, "A list button cannot have more than #{@max_length_action_button} characters"}
 
       _ ->
