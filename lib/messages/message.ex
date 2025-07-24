@@ -128,7 +128,7 @@ defmodule Wax.Messages.Message do
   """
   @spec add_audio(__MODULE__.t(), whatsapp_media_id()) :: __MODULE__.t()
   def add_audio(%__MODULE__{} = message, media_id) do
-    media = %Media{id: media_id, type: :audio}
+    media = Media.new_audio(media_id)
 
     %{message | audio: media}
   end
@@ -139,8 +139,7 @@ defmodule Wax.Messages.Message do
   @spec add_document(__MODULE__.t(), whatsapp_media_id(), String.t(), String.t()) ::
           __MODULE__.t()
   def add_document(%__MODULE__{} = message, media_id, filename, caption \\ nil) do
-    # TODO: Media token builder
-    media = %Media{id: media_id, type: :document, filename: filename, caption: caption}
+    media = Media.new_document(media_id, filename, caption)
 
     %{message | document: media}
   end
@@ -180,7 +179,7 @@ defmodule Wax.Messages.Message do
   """
   @spec add_video(__MODULE__.t(), whatsapp_media_id(), String.t() | nil) :: __MODULE__.t()
   def add_video(%__MODULE__{} = message, media_id, caption \\ nil) do
-    media = %Media{id: media_id, caption: caption, type: :video}
+    media = Media.new_video(media_id, caption)
 
     %{message | video: media}
   end

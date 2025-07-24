@@ -46,10 +46,34 @@ defmodule Wax.Messages.Media do
   end
 
   @doc """
+  Creates a new Media object of Audio type
+  """
+  @spec new_audio(String.t()) :: __MODULE__.t()
+  def new_audio(media_id) do
+    %__MODULE__{type: :audio, id: media_id}
+  end
+
+  @doc """
+  Creates a new Media object of Document type
+  """
+  @spec new_document(String.t(), String.t(), String.t()) :: __MODULE__.t()
+  def new_document(media_id, filename, caption \\ nil) do
+    %__MODULE__{type: :document, id: media_id, filename: filename, caption: caption}
+  end
+
+  @doc """
   Creates a new Media object of Image type
   """
   @spec new_image(String.t(), String.t()) :: __MODULE__.t()
   def new_image(media_id, caption \\ nil) do
     %__MODULE__{type: :image, id: media_id, caption: caption}
+  end
+
+  @doc """
+  Creates a new Media object of Video type
+  """
+  @spec new_video(String.t(), String.t()) :: __MODULE__.t()
+  def new_video(media_id, caption \\ nil) do
+    %__MODULE__{type: :video, id: media_id, caption: caption}
   end
 end
