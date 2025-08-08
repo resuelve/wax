@@ -26,13 +26,13 @@ defmodule Wax.CloudAPI.MediaTest do
 
     test_file = Briefly.create!(extname: ".pdf")
 
-    assert {:ok, ^media_id} = Media.upload(test_file, auth)
+    assert {:ok, ^media_id} = Media.upload_from_path(test_file, auth)
   end
 
   test "Uploading a document with no extension should return an error", %{auth: auth} do
     test_file = Briefly.create!(extname: "")
 
-    assert {:error, error} = Media.upload(test_file, auth)
+    assert {:error, error} = Media.upload_from_path(test_file, auth)
     assert String.contains?(error, "extension")
   end
 end

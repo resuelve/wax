@@ -92,7 +92,7 @@ defmodule Mix.Tasks.SendMessage do
   @spec upload_media_if_required(Auth.t(), map()) ::
           {:ok, map()} | {:error, String.t()}
   defp upload_media_if_required(auth, %{file_path: file_path} = params) do
-    case MediaManager.upload(file_path, auth) do
+    case MediaManager.upload_from_path(file_path, auth) do
       {:ok, media_id} ->
         {:ok, Map.put(params, :media_id, media_id)}
 

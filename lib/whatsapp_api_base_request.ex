@@ -37,6 +37,8 @@ defmodule WhatsappApiBaseRequest do
     apply(module, method, params)
   rescue
     reason ->
+      Logger.error("[Cloud API] : #{inspect(reason)}")
+
       Logger.info(
         "Got a HTTP Error, attempts #{attempts}",
         reason: inspect(reason),
