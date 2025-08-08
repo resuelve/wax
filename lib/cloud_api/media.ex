@@ -7,27 +7,51 @@ defmodule Wax.CloudAPI.Media do
   alias Wax.CloudAPI.{Auth, ResponseParser}
 
   @doc """
+  Uploads an image to the Cloud API servers from the given path
+
+  This returns the Media ID, which is required to send any type
+  of media files in a message.
+
+  """
+  @spec upload_from_path(Path.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
+  def upload_from_path(file_path, %Auth{} = auth) do
+    with :ok <- validate_file(file_path) do
+      mime_type = MIME.from_path(file_path)
+      multipart_data = {:file, file_path}
+
+      do_upload(multipart_data, mime_type, auth)
+    end
+  end
+
+  @doc """
   Uploads an image to the Cloud API servers
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
 
   """
-  @spec upload(Path.t(), Auth.t()) ::
+  @spec upload_binary(iodata(), Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
-  def upload(file_path, %Auth{} = auth) do
+  def upload_binary(binary_data, file_path, %Auth{} = auth) do
     with :ok <- validate_file(file_path) do
-      do_upload(file_path, auth)
+      mime_type = MIME.from_path(file_path)
+      filename = Path.basename(file_path)
+
+      multipart_data =
+        {:part, binary_data, {"form-data", [name: "file", filename: filename]},
+         [{"Content-Type", mime_type}]}
+
+      do_upload(multipart_data, mime_type, auth)
     end
   end
 
-  @spec do_upload(Path.t(), Auth.t()) :: {:ok, Media.media_id()} | {:error, String.t()}
-  defp do_upload(file_path, auth) do
-    mime_type = MIME.from_path(file_path)
+  # @spec do_upload(Path.t(), Auth.t()) :: {:ok, Media.media_id()} | {:error, String.t()}
+  defp do_upload(multipart_file_data, mime_type, auth) do
     headers = [Auth.build_header(auth)]
 
     data = [
-      {:file, file_path},
+      multipart_file_data,
       {"type", mime_type},
       {"messaging_product", "whatsapp"}
     ]
