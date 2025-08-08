@@ -61,7 +61,7 @@ defmodule Wax.CloudAPI.Media do
       {:ok, response} ->
         ResponseParser.parse(response, :media_upload)
 
-      error ->
+      _ ->
         {:error, "Media upload failed"}
     end
   end
