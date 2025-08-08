@@ -16,42 +16,40 @@ defmodule Wax.CloudAPI.Media do
   @spec upload_from_path(Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
   def upload_from_path(file_path, %Auth{} = auth) do
-    with :ok <- validate_file(file_path) do
-      mime_type = MIME.from_path(file_path)
-      multipart_data = {:file, file_path}
-
-      do_upload(multipart_data, mime_type, auth)
-    end
+    upload(file_path, file_path, auth)
   end
 
   @doc """
-  Uploads an image to the Cloud API servers
+  Uploads an image to the Cloud API servers from binary data
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
 
   """
-  @spec upload_binary(iodata(), Path.t(), Auth.t()) ::
+  @spec upload_binary(iodata(), String.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
-  def upload_binary(binary_data, file_path, %Auth{} = auth) do
+  def upload_binary(binary_file_content, filename, %Auth{} = auth) do
+    upload(binary_file_content, filename, auth)
+  end
+
+  @spec upload(Path.t() | iodata(), Path.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
+  defp upload(multipart_data, file_path, auth) do
     with :ok <- validate_file(file_path) do
       mime_type = MIME.from_path(file_path)
       filename = Path.basename(file_path)
 
-      multipart_data =
-        {:part, binary_data, {"form-data", [name: "file", filename: filename]},
-         [{"Content-Type", mime_type}]}
-
-      do_upload(multipart_data, mime_type, auth)
+      do_upload(multipart_data, mime_type, filename, auth)
     end
   end
 
   # @spec do_upload(Path.t(), Auth.t()) :: {:ok, Media.media_id()} | {:error, String.t()}
-  defp do_upload(multipart_file_data, mime_type, auth) do
+  defp do_upload(multipart_data, mime_type, filename, auth) do
     headers = [Auth.build_header(auth)]
 
     data = [
-      multipart_file_data,
+      {"file", multipart_data, {"form-data", [name: "file", filename: filename]},
+       [{"Content-Type", mime_type}]},
       {"type", mime_type},
       {"messaging_product", "whatsapp"}
     ]
@@ -63,7 +61,7 @@ defmodule Wax.CloudAPI.Media do
       {:ok, response} ->
         ResponseParser.parse(response, :media_upload)
 
-      _ ->
+      error ->
         {:error, "Media upload failed"}
     end
   end
