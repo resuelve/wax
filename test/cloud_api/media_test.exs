@@ -24,15 +24,39 @@ defmodule Wax.CloudAPI.MediaTest do
       Plug.Conn.resp(conn, 200, response)
     end)
 
-    test_file = Briefly.create!(extname: ".pdf")
+    test_file_path = Briefly.create!(extname: ".pdf")
 
-    assert {:ok, ^media_id} = Media.upload(test_file, auth)
+    assert {:ok, ^media_id} = Media.upload_from_path(test_file_path, auth)
   end
 
   test "Uploading a document with no extension should return an error", %{auth: auth} do
-    test_file = Briefly.create!(extname: "")
+    test_file_path = Briefly.create!(extname: "")
 
-    assert {:error, error} = Media.upload(test_file, auth)
+    assert {:error, error} = Media.upload_from_path(test_file_path, auth)
+    assert String.contains?(error, "extension")
+  end
+
+  test "Upload a document file from a binary", %{bypass: bypass, auth: auth} do
+    media_id = "TEST00000000"
+
+    Bypass.expect_once(bypass, "POST", "/#{auth.whatsapp_number_id}/media", fn conn ->
+      response = ~s<{"id": "#{media_id}"}>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    test_file_path = Briefly.create!(extname: ".pdf")
+    binary_data = File.read!(test_file_path)
+
+    assert {:ok, ^media_id} = Media.upload_binary(binary_data, test_file_path, auth)
+  end
+
+  test "Uploading a document from a binary with no extension should return an error", %{
+    auth: auth
+  } do
+    test_file_path = Briefly.create!(extname: "")
+    binary_data = File.read!(test_file_path)
+
+    assert {:error, error} = Media.upload_binary(binary_data, test_file_path, auth)
     assert String.contains?(error, "extension")
   end
 end

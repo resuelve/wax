@@ -7,27 +7,50 @@ defmodule Wax.CloudAPI.Media do
   alias Wax.CloudAPI.{Auth, ResponseParser}
 
   @doc """
-  Uploads an image to the Cloud API servers
+  Uploads an image to the Cloud API servers from the given path
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
 
   """
-  @spec upload(Path.t(), Auth.t()) ::
+  @spec upload_from_path(Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
-  def upload(file_path, %Auth{} = auth) do
+  def upload_from_path(file_path, %Auth{} = auth) do
+    upload(file_path, file_path, auth)
+  end
+
+  @doc """
+  Uploads an image to the Cloud API servers from binary data
+
+  This returns the Media ID, which is required to send any type
+  of media files in a message.
+
+  """
+  @spec upload_binary(iodata(), String.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
+  def upload_binary(binary_file_content, filename, %Auth{} = auth) do
+    upload(binary_file_content, filename, auth)
+  end
+
+  @spec upload(Path.t() | iodata(), Path.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
+  defp upload(multipart_data, file_path, auth) do
     with :ok <- validate_file(file_path) do
-      do_upload(file_path, auth)
+      mime_type = MIME.from_path(file_path)
+      filename = Path.basename(file_path)
+
+      do_upload(multipart_data, mime_type, filename, auth)
     end
   end
 
-  @spec do_upload(Path.t(), Auth.t()) :: {:ok, Media.media_id()} | {:error, String.t()}
-  defp do_upload(file_path, auth) do
-    mime_type = MIME.from_path(file_path)
+  @spec do_upload(Path.t() | iodata(), String.t(), String.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
+  defp do_upload(multipart_data, mime_type, filename, auth) do
     headers = [Auth.build_header(auth)]
 
     data = [
-      {:file, file_path},
+      {"file", multipart_data, {"form-data", [name: "file", filename: filename]},
+       [{"Content-Type", mime_type}]},
       {"type", mime_type},
       {"messaging_product", "whatsapp"}
     ]

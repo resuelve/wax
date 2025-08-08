@@ -65,7 +65,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       {:ok, media_id} =
         [extname: ".png"]
         |> Briefly.create!()
-        |> Media.upload(auth)
+        |> Media.upload_from_path(auth)
 
       Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
         response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
@@ -99,7 +99,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       {:ok, media_id} =
         [extname: ".mp4"]
         |> Briefly.create!()
-        |> Media.upload(auth)
+        |> Media.upload_from_path(auth)
 
       Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
         response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
@@ -133,7 +133,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       {:ok, media_id} =
         [extname: ".mp3"]
         |> Briefly.create!()
-        |> Media.upload(auth)
+        |> Media.upload_from_path(auth)
 
       Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
         response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
@@ -160,7 +160,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       {:ok, media_id} =
         [extname: ".pdf"]
         |> Briefly.create!()
-        |> Media.upload(auth)
+        |> Media.upload_from_path(auth)
 
       Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
         response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
@@ -196,7 +196,7 @@ defmodule Wax.CloudAPI.MessagesTest do
       {:ok, media_id} =
         [extname: ".png"]
         |> Briefly.create!()
-        |> Media.upload(auth)
+        |> Media.upload_from_path(auth)
 
       Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
         response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
