@@ -43,7 +43,8 @@ defmodule Wax.CloudAPI.Media do
     end
   end
 
-  # @spec do_upload(Path.t(), Auth.t()) :: {:ok, Media.media_id()} | {:error, String.t()}
+  @spec do_upload(Path.t() | iodata(), String.t(), String.t(), Auth.t()) ::
+          {:ok, Media.media_id()} | {:error, String.t()}
   defp do_upload(multipart_data, mime_type, filename, auth) do
     headers = [Auth.build_header(auth)]
 
