@@ -35,11 +35,12 @@ defmodule Wax.CloudAPI.Media do
   @spec upload(Path.t() | iodata(), Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
   defp upload(multipart_data, file_path, auth) do
-    with :ok <- validate_file(file_path) do
-      mime_type = MIME.from_path(file_path)
+    with :ok <- validate_file(file_path),
+      {:ok, mime_type} <- detect_mime(file_path) do
       filename = Path.basename(file_path)
 
       do_upload(multipart_data, mime_type, filename, auth)
+
     end
   end
 
@@ -85,6 +86,33 @@ defmodule Wax.CloudAPI.Media do
 
       _extension ->
         :ok
+    end
+  end
+
+  @spec detect_mime(Path.t()) :: String.t()
+  defp detect_mime(file_path) do
+    case Path.extname(file_path) do
+      ".m4a" -> {:ok, "audio/mp4"}
+    ".ogg" -> {:ok, "audio/ogg"}
+    ".mp3" -> {:ok, "audio/mpeg"}
+    ".aac" -> {:ok, "audio/aac"}
+    ".amr" -> {:ok, "audio/amr"}
+    ".opus" -> {:ok, "audio/opus"}
+    ".pdf" -> {:ok, "application/pdf"}
+    ".doc" -> {:ok, "application/msword"}
+    ".docx" -> {:ok, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+    ".ppt" -> {:ok, "application/vnd.ms-powerpoint"}
+    ".pptx" -> {:ok, "application/vnd.openxmlformats-officedocument.presentationml.presentation"}
+    ".xls" -> {:ok, "application/vnd.ms-excel"}
+    ".xlsx" -> {:ok, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+    ".txt" -> {:ok, "text/plain"}
+    ".jpeg" -> {:ok, "image/jpeg"}
+    ".jpg" -> {:ok, "image/jpeg"}
+    ".png" -> {:ok, "image/png"}
+    ".webp" -> {:ok, "image/webp"}
+    ".mp4" -> {:ok, "video/mp4"}
+    ".3gp" -> {:ok, "video/3gpp"}
+    extension -> {:error, "File #{extension} not supported"}
     end
   end
 end
