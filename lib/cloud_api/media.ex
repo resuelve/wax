@@ -36,7 +36,7 @@ defmodule Wax.CloudAPI.Media do
           {:ok, Media.media_id()} | {:error, String.t()}
   defp upload(multipart_data, file_path, auth) do
     with :ok <- validate_file(file_path) do
-      mime_type = MIME.from_path(file_path)
+      mime_type = detect_mime(file_path)
       filename = Path.basename(file_path)
 
       do_upload(multipart_data, mime_type, filename, auth)
@@ -85,6 +85,33 @@ defmodule Wax.CloudAPI.Media do
 
       _extension ->
         :ok
+    end
+  end
+
+  @spec detect_mime(Path.t()) :: String.t()
+  defp detect_mime(file_path) do
+    case Path.extname(file_path) do
+      ".m4a" -> "audio/mp4"
+      ".ogg" -> "audio/ogg"
+      ".mp3" -> "audio/mpeg"
+      ".aac" -> "audio/aac"
+      ".amr" -> "audio/amr"
+      ".opus" -> "audio/opus"
+      ".pdf" -> "application/pdf"
+      ".doc" -> "application/msword"
+      ".docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ".ppt" -> "application/vnd.ms-powerpoint"
+      ".pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      ".xls" -> "application/vnd.ms-excel"
+      ".xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ".txt" -> "text/plain"
+      ".jpeg" -> "image/jpeg"
+      ".jpg" -> "image/jpeg"
+      ".png" -> "image/png"
+      ".webp" -> "image/webp"
+      ".mp4" -> "video/mp4"
+      ".3gp" -> "video/3gpp"
+      _ -> MIME.from_path(file_path) || "application/octet-stream"
     end
   end
 end
