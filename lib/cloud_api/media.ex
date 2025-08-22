@@ -35,12 +35,6 @@ defmodule Wax.CloudAPI.Media do
   @spec upload(Path.t() | iodata(), Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
   defp upload(multipart_data, file_path, auth) do
-    # with :ok <- validate_file(file_path) do
-    #   mime_type = detect_mime(file_path)
-    #   filename = Path.basename(file_path)
-
-    #   do_upload(multipart_data, mime_type, filename, auth)
-    # end
     with :ok <- validate_file(file_path),
       {:ok, mime_type} <- detect_mime(file_path) do
       filename = Path.basename(file_path)
