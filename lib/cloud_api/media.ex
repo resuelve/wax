@@ -51,6 +51,7 @@ defmodule Wax.CloudAPI.Media do
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
+
   """
   @spec upload_from_path(Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
