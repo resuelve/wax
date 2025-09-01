@@ -46,9 +46,11 @@ defmodule Wax.CloudAPI.Media do
     end
   end
 
+  @doc """
+  Uploads a media file to the Cloud API servers from a path
+
   This returns the Media ID, which is required to send any type
   of media files in a message.
-
   """
   @spec upload_from_path(Path.t(), Auth.t()) ::
           {:ok, Media.media_id()} | {:error, String.t()}
@@ -57,7 +59,7 @@ defmodule Wax.CloudAPI.Media do
   end
 
   @doc """
-  Uploads an image to the Cloud API servers from binary data
+  Uploads a media file to the Cloud API servers from binary data
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
