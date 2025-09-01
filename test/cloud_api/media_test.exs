@@ -16,6 +16,24 @@ defmodule Wax.CloudAPI.MediaTest do
     {:ok, bypass: bypass, auth: auth, to: test_to_number}
   end
 
+  test "Downloading a media file", %{bypass: bypass, auth: auth} do
+    url = "localhost:#{bypass.port}/test-download-media"
+    media_id = "TEST00000000"
+
+    Bypass.expect_once(bypass, "GET", "/#{media_id}", fn conn ->
+      response = ~s<{"url": "#{url}"}>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    Bypass.expect_once(bypass, "GET", "/test-download-media", fn conn ->
+      response = <<0>>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    assert {:ok, binary_data} = Media.download(media_id, auth)
+    assert is_bitstring(binary_data)
+  end
+
   test "Upload a document file", %{bypass: bypass, auth: auth} do
     media_id = "TEST00000000"
 
