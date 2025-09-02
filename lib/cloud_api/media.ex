@@ -9,6 +9,8 @@ defmodule Wax.CloudAPI.Media do
   @doc """
   Downloads a media file from the Whatsapp Cloud server
   """
+  @spec download(String.t(), Auth.t()) ::
+          {:ok, file_binary_data :: binary()} | {:error, String.t()}
   def download(media_id, %Auth{} = auth) do
     with {:ok, media_url} <- get_media_url(media_id, auth) do
       download_media(media_url, auth)
