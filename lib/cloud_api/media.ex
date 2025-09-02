@@ -7,7 +7,49 @@ defmodule Wax.CloudAPI.Media do
   alias Wax.CloudAPI.{Auth, ResponseParser}
 
   @doc """
-  Uploads an image to the Cloud API servers from the given path
+  Downloads a media file from the Whatsapp Cloud server
+  """
+  @spec download(String.t(), Auth.t()) ::
+          {:ok, file_binary_data :: binary()} | {:error, String.t()}
+  def download(media_id, %Auth{} = auth) do
+    with {:ok, media_url} <- get_media_url(media_id, auth) do
+      download_media(media_url, auth)
+    end
+  end
+
+  @spec get_media_url(String.t(), Auth.t()) :: {:ok, String.t()} | {:error, String.t()}
+  defp get_media_url(media_id, auth) do
+    headers = [Auth.build_header(auth)]
+
+    media_id
+    |> CloudAPI.build_url()
+    |> HTTPoison.get(headers)
+    |> case do
+      {:ok, response} ->
+        ResponseParser.parse(response, :media_data)
+
+      {:error, error} ->
+        {:error, "Obtaining media URL failed: #{inspect(error)}"}
+    end
+  end
+
+  @spec download_media(String.t(), Auth.t()) :: {:ok, term()} | {:error, String.t()}
+  defp download_media(media_url, auth) do
+    headers = [Auth.build_header(auth)]
+
+    media_url
+    |> HTTPoison.get(headers)
+    |> case do
+      {:ok, response} ->
+        ResponseParser.parse(response, :media_download)
+
+      {:error, error} ->
+        {:error, "Media download failed: #{inspect(error)}"}
+    end
+  end
+
+  @doc """
+  Uploads a media file to the Cloud API servers from a path
 
   This returns the Media ID, which is required to send any type
   of media files in a message.
@@ -20,7 +62,7 @@ defmodule Wax.CloudAPI.Media do
   end
 
   @doc """
-  Uploads an image to the Cloud API servers from binary data
+  Uploads a media file to the Cloud API servers from binary data
 
   This returns the Media ID, which is required to send any type
   of media files in a message.

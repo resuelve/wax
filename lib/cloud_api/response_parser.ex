@@ -20,6 +20,23 @@ defmodule Wax.CloudAPI.ResponseParser do
     end
   end
 
+  def parse(%Response{status_code: 200, body: body}, :media_data) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, %{"url" => media_url}} ->
+        {:ok, media_url}
+
+      {:ok, %{"error" => %{"message" => error_message}}} ->
+        {:error, "Media not found: #{error_message}"}
+
+      _ ->
+        {:error, "Unexpected error when downloading file: #{body}"}
+    end
+  end
+
+  def parse(%Response{status_code: 200, body: body}, :media_download) when is_bitstring(body) do
+    {:ok, body}
+  end
+
   def parse(%Response{status_code: 200, body: body}, _type) do
     {:ok, body}
   end
