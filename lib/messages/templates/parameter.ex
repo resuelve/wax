@@ -33,7 +33,7 @@ defmodule Wax.Messages.Templates.Parameter do
     Enum.reduce_while(params, [], fn param, acc ->
       case parse(param) do
         %__MODULE__{} = parsed_param ->
-          {:cont, [parsed_param | acc]}
+          {:cont, acc ++ [parsed_param]}
 
         {:invalid_param, invalid_param} ->
           {:halt, {:error, "Invalid param: #{inspect(invalid_param)}"}}
