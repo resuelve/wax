@@ -49,12 +49,12 @@ defmodule Wax.Messages.Templates.Parameter do
     %__MODULE__{type: :image, image: image}
   end
 
-  def parse({:document, %Media{} = image}) do
-    %__MODULE__{type: :document, image: image}
+  def parse({:document, %Media{} = document}) do
+    %__MODULE__{type: :document, document: document}
   end
 
-  def parse({:video, %Media{} = image}) do
-    %__MODULE__{type: :video, image: image}
+  def parse({:video, %Media{} = video}) do
+    %__MODULE__{type: :video, video: video}
   end
 
   def parse(param) do
