@@ -9,8 +9,6 @@ jobs:
   publish-hexpm:
     name: publish to hex.pm
     runs-on: ubuntu-latest
-    env:
-      ImageOS: ubuntu20
     container: elixir:1.16.3-alpine
     steps:
       - uses: actions/checkout@v3
