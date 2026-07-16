@@ -45,6 +45,9 @@ defmodule Wax.Messages.Interactive.Action do
 
           :flow ->
             [:name, :parameters]
+
+          :cta_url ->
+            [:name, :parameters]
         end
 
       value
