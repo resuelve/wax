@@ -533,6 +533,46 @@ defmodule Wax.CloudAPI.MessagesTest do
     assert error =~ "CTA"
   end
 
+  test "Send a cta_url type interactive message", %{bypass: bypass, auth: auth, to: to} do
+    Bypass.expect(bypass, "POST", "/#{auth.whatsapp_number_id}/messages", fn conn ->
+      response = ~s<{"messaging_product": "whatsapp", "messages": [{"id": "TESTMESSAGEID"}]}>
+      Plug.Conn.resp(conn, 200, response)
+    end)
+
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_cta_url_action("Visit Page", "https://example.com")
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:ok, %{"messages" => [%{"id" => "TESTMESSAGEID"}]}} = Messages.send(message, auth)
+  end
+
+  test "Fail to send a cta_url type message because of missing url", %{auth: auth, to: to} do
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_cta_url_action("Visit Page", "")
+
+    message =
+      to
+      |> Message.new()
+      |> Message.set_type(:interactive)
+      |> Message.add_interactive(interactive)
+
+    assert {:error, error} = Messages.send(message, auth)
+    assert error =~ "URL"
+  end
+
   describe "Various errors" do
     test "Sending a message of an unsupported type", %{auth: auth, to: to} do
       message =

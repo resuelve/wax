@@ -200,6 +200,19 @@ defmodule Mix.Tasks.SendMessage do
     |> Message.add_interactive(interactive)
   end
 
+  defp build_test_message(message, "interactive-cta-url", _params) do
+    interactive =
+      Interactive.new()
+      |> Interactive.put_header(:text, "Header", "Subtexto")
+      |> Interactive.put_body("BODY")
+      |> Interactive.put_footer("This is a footer")
+      |> Interactive.put_cta_url_action("Visit Page", "https://example.com")
+
+    message
+    |> Message.set_type(:interactive)
+    |> Message.add_interactive(interactive)
+  end
+
   defp build_test_message(message, "template", %{media_id: media_id}) do
     template_name = "test_url_and_image"
     language = "es_MX"
