@@ -107,12 +107,10 @@ defmodule Wax.Messages.Interactive do
 
   @doc """
   Adds a CTA URL button to the Interactive message
-
   The `display_text` is the label shown on the button (max 20 characters).
   The `url` is the destination URL the user will be redirected to when tapping the button.
 
   This sends a Call-to-Action URL button message.
-
   """
   @spec put_cta_url_action(__MODULE__.t(), String.t(), String.t()) :: __MODULE__.t()
   def put_cta_url_action(%__MODULE__{} = interactive, display_text, url)
