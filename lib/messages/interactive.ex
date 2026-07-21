@@ -13,7 +13,7 @@ defmodule Wax.Messages.Interactive do
 
   alias Wax.Messages.Interactive.{Action, Header, Section}
 
-  @type type :: :button | :list | :product | :product_list | :flow
+  @type type :: :button | :list | :product | :product_list | :flow | :cta_url
 
   @type t :: %__MODULE__{
           action: term(),
@@ -103,6 +103,28 @@ defmodule Wax.Messages.Interactive do
 
     action = %Action{interactive_type: :button, buttons: buttons}
     %{interactive | type: :button, action: action}
+  end
+
+  @doc """
+  Adds a CTA URL button to the Interactive message
+  The `display_text` is the label shown on the button (max 20 characters).
+  The `url` is the destination URL the user will be redirected to when tapping the button.
+
+  This sends a Call-to-Action URL button message.
+  """
+  @spec put_cta_url_action(__MODULE__.t(), String.t(), String.t()) :: __MODULE__.t()
+  def put_cta_url_action(%__MODULE__{} = interactive, display_text, url)
+      when is_binary(display_text) and is_binary(url) do
+    action = %Action{
+      interactive_type: :cta_url,
+      name: "cta_url",
+      parameters: %{
+        display_text: display_text,
+        url: url
+      }
+    }
+
+    %{interactive | type: :cta_url, action: action}
   end
 
   @doc """
@@ -377,6 +399,28 @@ defmodule Wax.Messages.Interactive do
          action: %Action{}
        }) do
     {:error, "Invalid Flow action"}
+  end
+
+  defp do_validate(%__MODULE__{
+         type: :cta_url,
+         action: %Action{name: name, parameters: parameters}
+       })
+       when is_binary(name) and is_map(parameters) do
+    display_text = Map.get(parameters, :display_text, "")
+    url = Map.get(parameters, :url, "")
+
+    valid_display_text? =
+      is_binary(display_text) and
+        String.length(display_text) > 0 and
+        String.length(display_text) <= @max_length_cta_button
+
+    valid_url? = is_binary(url) and url not in ["", nil]
+
+    case {valid_display_text?, valid_url?} do
+      {false, _} -> {:error, "Invalid display_text for CTA URL button"}
+      {_, false} -> {:error, "Invalid URL for CTA URL button"}
+      _ -> :ok
+    end
   end
 
   defp do_validate(%__MODULE__{action: _action}) do

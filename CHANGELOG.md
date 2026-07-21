@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Support for CTA URL interactive messages (`:cta_url` type)
+
 ## [0.4.7] - 2020-07-07
 ### Added
 - Support for caption/filename on HSM´s with multimedia
